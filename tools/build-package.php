@@ -2,9 +2,10 @@
 /**
  * إنشاء حزمة جاهزة للنشر على السيرفر (ZIP).
  *
- *      php tools/build-package.php                 # يبني storage/build/lokmen-license-<تاريخ>.zip
- *      php tools/build-package.php --name=my.zip   # اسم مخصص
- *      php tools/build-package.php --with-tests    # تضمين مجلد الاختبارات
+ *      php tools/build-package.php                          # يبني storage/build/lokmen-license-<تاريخ>.zip
+ *      php tools/build-package.php --name=my.zip            # اسم مخصص
+ *      php tools/build-package.php --out=/path/lokmen.zip   # مسار مخصص (يُنشأ المجلد إن لزم)
+ *      php tools/build-package.php --with-tests             # تضمين الاختبارات وأدوات الفحص
  *
  * الحزمة تستثني: .git و .env و node_modules و storage/build وملفات السجلات المؤقتة،
  * وتضم: كل ملفات التشغيل + database.sql + install.php + docs + tools (عدا أدوات التطوير).
@@ -19,13 +20,28 @@ if (!is_cli()) {
 }
 
 $withTests = cli_has_flag('with-tests');
-$name = cli_option('name', 'lokmen-license-' . date('Ymd-His') . '.zip');
+$name = (string) cli_option('name', 'lokmen-license-' . date('Ymd-His') . '.zip');
+$out = cli_option('out');
 $buildDir = BASE_PATH . '/storage/build';
-if (!is_dir($buildDir) && !mkdir($buildDir, 0755, true)) {
-    fwrite(STDERR, "تعذّر إنشاء مجلد storage/build\n");
-    exit(1);
+if ($out !== null && $out !== '') {
+    // مسار كامل مطلوب صراحةً (مثال: dist/lokmen-license-v1.0.0.zip)
+    $out = (string) $out;
+    if (!str_starts_with($out, '/')) {
+        $out = BASE_PATH . '/' . ltrim($out, '/');
+    }
+    $targetDir = dirname($out);
+    if (!is_dir($targetDir) && !mkdir($targetDir, 0755, true)) {
+        fwrite(STDERR, "تعذّر إنشاء المجلد: {$targetDir}\n");
+        exit(1);
+    }
+    $zipPath = $out;
+} else {
+    if (!is_dir($buildDir) && !mkdir($buildDir, 0755, true)) {
+        fwrite(STDERR, "تعذّر إنشاء مجلد storage/build\n");
+        exit(1);
+    }
+    $zipPath = str_starts_with($name, '/') ? $name : $buildDir . '/' . basename($name);
 }
-$zipPath = str_starts_with($name, '/') ? $name : $buildDir . '/' . basename($name);
 
 if (!class_exists('ZipArchive')) {
     fwrite(STDERR, "إضافة zip غير مفعّلة في PHP.\n");
@@ -37,8 +53,9 @@ if (!class_exists('ZipArchive')) {
 /** مجلدات/ملفات مستثناة من الحزمة */
 $excluded = ['.git', '.github', 'node_modules', 'vendor', '.venv', '__pycache__',
              'storage/build', 'storage/logs', 'storage/cache', 'storage/backups', 'storage/tmp_pdf_test',
-             '.env', '.DS_Store', 'Thumbs.db'];
-$excludedFiles = ['/^\.env\.(?!example$)/', '/\.log$/', '/\.tmp$/', '/installed\.lock$/'];
+             'dist', '.env', '.DS_Store', 'Thumbs.db'];
+// لا تُضمَّن حزمة نشر قديمة داخل الحزمة الجديدة أبداً
+$excludedFiles = ['/^\.env\.(?!example$)/', '/\.log$/', '/\.tmp$/', '/\.zip$/', '/installed\.lock$/'];
 if (!$withTests) {
     $excluded[] = 'tests';
     $excluded[] = 'tools/dev';
@@ -103,11 +120,6 @@ foreach (['storage/logs', 'storage/cache', 'storage/build', 'uploads/payments', 
 $zip->close();
 $size = filesize($zipPath);
 
-$checks = '';
-if ($withTests) {
-    $checks = "  لاختبار الحزمة: php tests/run.php\n";
-}
-
 echo "\n";
 echo "  ✔ تم إنشاء حزمة النشر\n";
 echo "  ─────────────────────────────────────────────\n";
@@ -119,6 +131,9 @@ echo "  1) ارفع الحزمة عبر FTP/cPanel ثم فك الضغط في م�
 echo "  2) أنشئ قاعدة بيانات MySQL من لوحة الاستضافة، وانسخ بياناتها.\n";
 echo "  3) افتح https://your-domain.com/install.php وأكمل الخطوات.\n";
 echo "  4) احذف install.php بعد نجاح التثبيت.\n";
-echo $checks;
+if ($withTests) {
+    echo "  5) (اختياري) على السيرفر: php tests/lint.php && php tests/run.php\n";
+    echo "     وفحص الصفحات: php tools/dev/smoke.php --route=index.php\n";
+}
 echo "  الدليل الكامل: docs/التثبيت-على-سيرفر.md\n\n";
 exit(0);

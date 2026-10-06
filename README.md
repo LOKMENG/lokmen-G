@@ -83,6 +83,7 @@ php tools/install-cli.php --db-host=localhost --db-name=professional_license \
 
 ```bash
 php tools/build-package.php     # ينشئ حزمة ZIP جاهزة للرفع في storage/build/
+php tools/build-package.php --with-tests --out=/path/lokmen-license.zip  # نسخة كاملة قابلة للفحص على السيرفر
 # ارفع الحزمة إلى السيرفر وفك الضغط، أنشئ قاعدة البيانات،
 # ثم افتح https://your-domain.com/install.php
 # أو من سطر الأوامر:
@@ -134,7 +135,8 @@ php tools/cron.php
 | `php tests/run.php` | اختبارات منطق المنصة (على قاعدة بيانات وهمية في الذاكرة) |
 | `php tests/run.php --real-db` | تشغيل الاختبارات على MySQL الفعلي |
 | `php tools/cron.php` | الصيانة الدورية (اشتراكات، تنبيهات، اختبارات متأخرة، تنظيف) |
-| `php tools/build-package.php` | بناء حزمة ZIP جاهزة للنشر |
+| `php tools/build-package.php` | بناء حزمة ZIP جاهزة للنشر في `storage/build/` |
+| `php tools/build-package.php --with-tests --out=/path/lokmen.zip` | بناء حزمة كاملة (بما فيها الاختبارات وأدوات الفحص) في مسار محدد |
 | `php tools/dev/validate-sql.php` | فحص `database.sql` (الجمل، الجداول، العروض، البيانات الأولية) |
 | `php tools/dev/smoke.php --all` | فحص دخاني لكل صفحات المنصة (تعمل فعلاً بلا أخطاء PHP) |
 | `php tools/dev/smoke.php --list` | عرض الصفحات التي يفحصها الفحص الدخاني |
