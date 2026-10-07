@@ -5,7 +5,7 @@
  * @var array $pendingPayments @var array $weakest @var array $hardest @var array $expiringSoon @var array $recentUsers
  */
 ?>
-<div class="row g-3 mb-3">
+<div class="row g-3 mb-3 rv">
     <div class="col-6 col-lg-3">
         <div class="pl-stat">
             <div class="pl-stat-icon"><i class="bi bi-people"></i></div>
@@ -61,7 +61,7 @@
     </div>
 <?php endif; ?>
 
-<div class="row g-3 mb-3">
+<div class="row g-3 mb-3 rv d1">
     <div class="col-lg-8">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -98,7 +98,7 @@
     </div>
 </div>
 
-<div class="row g-3">
+<div class="row g-3 rv d2">
     <div class="col-lg-6">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">

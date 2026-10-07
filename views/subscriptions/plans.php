@@ -23,7 +23,7 @@
     </div>
 <?php endif; ?>
 
-<div class="row g-4">
+<div class="row g-4 rv">
     <?php foreach ($plans as $plan): ?>
         <?php $features = json_decode((string) ($plan['features'] ?? '[]'), true) ?: []; ?>
         <div class="col-lg-4">
@@ -52,7 +52,7 @@
     <?php endforeach; ?>
 </div>
 
-<div class="card mt-4">
+<div class="card mt-4 rv d1">
     <div class="card-header"><i class="bi bi-info-circle text-primary me-2"></i> طرق الدفع المتاحة</div>
     <div class="card-body">
         <div class="row g-3">

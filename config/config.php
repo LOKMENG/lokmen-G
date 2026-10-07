@@ -20,7 +20,7 @@ return [
         'pretty_urls' => Env::bool('APP_PRETTY_URLS', true),
         'maintenance' => Env::bool('APP_MAINTENANCE', false),
         'root'        => $root,
-        'version'     => '1.0.0',
+        'version'     => '1.1.0',
         'locale'      => 'ar',
     ],
 

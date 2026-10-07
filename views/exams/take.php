@@ -17,11 +17,15 @@ $total = count($questions);
         (function () {
             var theme = localStorage.getItem('pl-theme');
             if (theme) { document.documentElement.setAttribute('data-bs-theme', theme); }
+            // علامة تفعيل الجافاسكربت: تُخفي عناصر الظهور التدريجي قبل أول رسم فقط عند توفّر السكربت،
+            // حتى تبقى كل المحتوى ظاهراً إذا كان السكربت معطّلاً في المتصفح.
+            document.documentElement.classList.add('cl-js');
         })();
     </script>
     <link rel="stylesheet" href="<?= e(asset('assets/css/bootstrap.rtl.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('assets/css/bootstrap-icons.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('assets/css/app.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset('assets/css/celadon.css')) ?>">
     <link rel="icon" href="<?= e(asset('assets/img/favicon.svg')) ?>" type="image/svg+xml">
 </head>
 <body>
@@ -206,6 +210,7 @@ $total = count($questions);
 </script>
 <script src="<?= e(asset('assets/js/bootstrap.bundle.min.js')) ?>"></script>
 <script src="<?= e(asset('assets/js/exam.js')) ?>"></script>
+<script src="<?= e(asset('assets/js/celadon.js')) ?>"></script>
 <script>
     // في نمط التدريب: عرض نتيجة السؤال مباشرة بعد الإجابة
     if (window.PL_EXAM && window.PL_EXAM.practiceMode) {

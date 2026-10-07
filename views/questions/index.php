@@ -18,7 +18,7 @@
     </div>
 <?php endif; ?>
 
-<div class="row g-3">
+<div class="row g-3 rv">
     <?php foreach ($tree as $category): ?>
         <div class="col-md-6 col-xl-4">
             <div class="card h-100 <?= $highlight === (int) $category['id'] ? 'border-primary' : '' ?>">

@@ -1,7 +1,7 @@
 <?php
 /** @var array $breakdown @var array $strengths @var array $weaknesses @var array $summary @var array $readiness @var array $recent @var array $tracks @var int $trackFilter */
 ?>
-<div class="row g-3 mb-3">
+<div class="row g-3 mb-3 rv">
     <div class="col-lg-8">
         <div class="card h-100">
             <div class="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
@@ -67,7 +67,7 @@
 </div>
 
 <?php if ($breakdown !== []): ?>
-    <div class="card mb-3">
+    <div class="card mb-3 rv d1">
         <div class="card-header"><i class="bi bi-list-check text-primary me-2"></i> تفصيل المجالات</div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -122,7 +122,7 @@
     </div>
 <?php endif; ?>
 
-<div class="row g-3">
+<div class="row g-3 rv d2">
     <div class="col-lg-6">
         <div class="card h-100">
             <div class="card-header text-success"><i class="bi bi-arrow-up-circle me-2"></i> نقاط القوة</div>

@@ -19,7 +19,7 @@ $breakdown = $dashboard['breakdown'];
 <?php endif; ?>
 
 <!-- بطاقات الإحصائيات -->
-<div class="row g-3 mb-3">
+<div class="row g-3 mb-3 rv">
     <div class="col-6 col-lg-3">
         <div class="pl-stat">
             <div class="pl-stat-icon"><i class="bi bi-journal-check"></i></div>
@@ -58,7 +58,7 @@ $breakdown = $dashboard['breakdown'];
     </div>
 </div>
 
-<div class="row g-3">
+<div class="row g-3 rv d1">
     <!-- حالة الاشتراك + نسبة الاستعداد -->
     <div class="col-lg-4">
         <div class="card h-100">

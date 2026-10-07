@@ -13,11 +13,15 @@ $pageStyles = $pageStyles ?? [];
         (function () {
             var theme = localStorage.getItem('pl-theme');
             if (theme) { document.documentElement.setAttribute('data-bs-theme', theme); }
+            // علامة تفعيل الجافاسكربت: تُخفي عناصر الظهور التدريجي قبل أول رسم فقط عند توفّر السكربت،
+            // حتى تبقى كل المحتوى ظاهراً إذا كان السكربت معطّلاً في المتصفح.
+            document.documentElement.classList.add('cl-js');
         })();
     </script>
     <link rel="stylesheet" href="<?= e(asset('assets/css/bootstrap.rtl.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('assets/css/bootstrap-icons.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('assets/css/app.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset('assets/css/celadon.css')) ?>">
     <?php foreach ($pageStyles as $style): ?>
         <link rel="stylesheet" href="<?= e($style) ?>">
     <?php endforeach; ?>
@@ -56,11 +60,13 @@ $pageStyles = $pageStyles ?? [];
                 <button class="btn btn-link btn-sm text-decoration-none" type="button" onclick="plToggleTheme()">
                     <i class="bi bi-moon-stars me-1" data-theme-icon></i> تبديل الوضع الليلي
                 </button>
+                <p class="small text-muted mb-0 mt-2 cl-credit">التصميم مستوحى من قالب Celadon: Design by <a rel="nofollow noopener" href="https://templatemo.com" target="_blank">TemplateMo</a> <a rel="nofollow noopener" href="https://www.tooplate.com" target="_blank">Tooplate</a></p>
             </div>
         </div>
     </div>
 </div>
 <script src="<?= e(asset('assets/js/bootstrap.bundle.min.js')) ?>"></script>
 <script src="<?= e(asset('assets/js/app.js')) ?>"></script>
+<script src="<?= e(asset('assets/js/celadon.js')) ?>"></script>
 </body>
 </html>

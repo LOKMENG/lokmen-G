@@ -9,7 +9,7 @@
     </div>
 <?php endif; ?>
 
-<div class="row g-3 mb-3">
+<div class="row g-3 mb-3 rv">
     <div class="col-12">
         <div class="card">
             <div class="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
@@ -91,7 +91,7 @@
 </div>
 
 <h5 class="mb-3"><i class="bi bi-journals text-primary me-2"></i> النماذج الجاهزة</h5>
-<div class="row g-3">
+<div class="row g-3 rv d1">
     <?php if ($templates === []): ?>
         <div class="col-12">
             <div class="card"><div class="card-body pl-empty"><i class="bi bi-journal-x"></i> لا توجد نماذج اختبار متاحة حالياً.</div></div>

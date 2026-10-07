@@ -10,17 +10,21 @@ $pageScripts = $pageScripts ?? [];
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="description" content="<?= e(settings('site_description', 'منصة سعودية للتدريب على اختبار الرخصة المهنية للمعلمين')) ?>">
-    <meta name="theme-color" content="#0b6b3a">
+    <meta name="theme-color" content="#E8EDF7">
     <title><?= e($title ?? config('app.name')) ?> | <?= e(settings('site_name', config('app.name'))) ?></title>
     <script>
         (function () {
             var theme = localStorage.getItem('pl-theme');
             if (theme) { document.documentElement.setAttribute('data-bs-theme', theme); }
+            // علامة تفعيل الجافاسكربت: تُخفي عناصر الظهور التدريجي قبل أول رسم فقط عند توفّر السكربت،
+            // حتى تبقى كل المحتوى ظاهراً إذا كان السكربت معطّلاً في المتصفح.
+            document.documentElement.classList.add('cl-js');
         })();
     </script>
     <link rel="stylesheet" href="<?= e(asset('assets/css/bootstrap.rtl.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('assets/css/bootstrap-icons.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('assets/css/app.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset('assets/css/celadon.css')) ?>">
     <?php foreach ($pageStyles as $style): ?>
         <link rel="stylesheet" href="<?= e($style) ?>">
     <?php endforeach; ?>
@@ -120,7 +124,10 @@ $pageScripts = $pageScripts ?? [];
         <hr class="border-light opacity-25">
         <div class="d-flex flex-wrap justify-content-between align-items-center small">
             <span>© <?= e(date('Y')) ?> <?= e(settings('site_name', config('app.name'))) ?> — جميع الحقوق محفوظة.</span>
-            <span class="text-white-50">الإصدار <?= e(config('app.version')) ?></span>
+            <span class="text-white-50 cl-credit">
+                الإصدار <?= e(config('app.version')) ?> —
+                التصميم مستوحى من قالب Celadon: Design by <a rel="nofollow noopener" href="https://templatemo.com" target="_blank">TemplateMo</a> <a rel="nofollow noopener" href="https://www.tooplate.com" target="_blank">Tooplate</a>
+            </span>
         </div>
     </div>
 </footer>
@@ -128,8 +135,12 @@ $pageScripts = $pageScripts ?? [];
 <script src="<?= e(asset('assets/js/bootstrap.bundle.min.js')) ?>"></script>
 <script src="<?= e(asset('assets/js/chart.min.js')) ?>"></script>
 <script src="<?= e(asset('assets/js/app.js')) ?>"></script>
+<script src="<?= e(asset('assets/js/celadon.js')) ?>"></script>
 <?php foreach ($pageScripts as $script): ?>
     <script src="<?= e($script) ?>"></script>
 <?php endforeach; ?>
+<button class="up-btn" id="clUp" type="button" aria-label="العودة للأعلى">
+    <i class="bi bi-arrow-up"></i>
+</button>
 </body>
 </html>

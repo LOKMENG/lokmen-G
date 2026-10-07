@@ -707,6 +707,124 @@ test('قوالب العرض لا تستدعي أصنافاً غير معرّفة
     Assert::true(preg_match('/(?<![\\\\\w>])View::/', $view) !== 1, 'لا استدعاء غير مؤهَّل لـ View داخل القالب');
 });
 
+test('طبقة التصميم «سيلادون» موجودة ومربوطة بكل القوالب', function (): void {
+    foreach (['assets/css/celadon.css', 'assets/js/celadon.js'] as $assetFile) {
+        Assert::true(is_file(BASE_PATH . '/' . $assetFile), 'ملف مفقود: ' . $assetFile);
+    }
+    foreach (['views/layouts/public.php', 'views/layouts/app.php', 'views/layouts/auth.php'] as $layout) {
+        $php = (string) file_get_contents(BASE_PATH . '/' . $layout);
+        Assert::contains('celadon.css', $php, $layout . ' لا يربط ملف الأنماط');
+        Assert::contains('celadon.js', $php, $layout . ' لا يربط ملف التفاعل');
+        Assert::true(
+            strpos($php, 'app.css') < strpos($php, 'celadon.css'),
+            'طبقة سيلادون يجب أن تُحمَّل بعد app.css في ' . $layout
+        );
+    }
+    // شاشة الاختبار صفحة مستقلة بترويسة خاصة
+    $exam = (string) file_get_contents(BASE_PATH . '/views/exams/take.php');
+    Assert::contains('celadon.css', $exam, 'شاشة الاختبار لا تربط طبقة التصميم');
+    Assert::contains('celadon.js', $exam, 'شاشة الاختبار لا تربط ملف التفاعل');
+});
+
+test('حقوق قالب Celadon محفوظة في تذييلات القوالب', function (): void {
+    // شرط الاستخدام المجاني للقالب: بقاء رابطي النسبة في التذييل
+    foreach (['views/layouts/public.php', 'views/layouts/app.php', 'views/layouts/auth.php'] as $layout) {
+        $php = (string) file_get_contents(BASE_PATH . '/' . $layout);
+        Assert::contains('templatemo.com', $php, 'رابط TemplateMo مفقود من ' . $layout);
+        Assert::contains('tooplate.com', $php, 'رابط Tooplate مفقود من ' . $layout);
+        Assert::contains('rel="nofollow noopener"', $php, 'صفة nofollow مفقودة من رابط النسبة في ' . $layout);
+        Assert::contains('cl-credit', $php, 'صنف سطر النسبة مفقود من ' . $layout);
+    }
+});
+
+test('المحتوى يبقى ظاهراً إذا تعطّلت الجافاسكربت', function (): void {
+    // إخفاء عناصر الظهور التدريجي مُقيَّد بالصنف cl-js الذي يضيفه سكربت الترويسة
+    $css = (string) file_get_contents(BASE_PATH . '/assets/css/celadon.css');
+    Assert::contains('.cl-js .rv', $css, 'قاعدة .cl-js .rv مفقودة');
+        Assert::true(
+        (bool) preg_match('/\\.rv\\s*\\{[^}]*opacity:\\s*1/', $css),
+        'القاعدة الافتراضية لـ .rv يجب أن تُبقي العنصر ظاهراً'
+    );
+    Assert::contains('prefers-reduced-motion', $css, 'لا بد من احترام تقليل الحركة');
+
+    foreach (['views/layouts/public.php', 'views/layouts/app.php', 'views/layouts/auth.php', 'views/exams/take.php'] as $layout) {
+        $php = (string) file_get_contents(BASE_PATH . '/' . $layout);
+        Assert::contains("classList.add('cl-js')", $php, 'علامة cl-js مفقودة من ' . $layout);
+    }
+});
+
+test('دليل التصميم مكتوب ومرتبط من ملف المشروع', function (): void {
+    $doc = BASE_PATH . '/docs/التصميم-والواجهة.md';
+    Assert::true(is_file($doc), 'دليل التصميم مفقود');
+    $text = (string) file_get_contents($doc);
+    foreach (['--cl-jade', 'cl-credit', 'check-design.php', 'prefers-reduced-motion', 'cl-js'] as $needle) {
+        Assert::contains($needle, $text, 'الدليل لا يشرح: ' . $needle);
+    }
+    $readme = (string) file_get_contents(BASE_PATH . '/README.md');
+    Assert::contains('docs/التصميم-والواجهة.md', $readme, 'README لا يربط دليل التصميم');
+});
+
+test('أنماط سيلادون سليمة الصياغة وتغطي الوضع الليلي وتقليل الحركة', function (): void {
+    $css = (string) file_get_contents(BASE_PATH . '/assets/css/celadon.css');
+    // توازن الأقواس: خلل واحد يُسقط كل الأنماط بعده
+    $stripped = (string) preg_replace('!/\*.*?\*/!s', '', $css);
+    $depth = 0;
+    $quote = null;
+    for ($i = 0, $n = strlen($stripped); $i < $n; $i++) {
+        $char = $stripped[$i];
+        if ($quote !== null) {
+            if ($char === $quote && ($stripped[$i - 1] ?? '') !== '\\') {
+                $quote = null;
+            }
+            continue;
+        }
+        if ($char === '"' || $char === "'") {
+            $quote = $char;
+            continue;
+        }
+        if ($char === '{') {
+            $depth++;
+        } elseif ($char === '}') {
+            $depth--;
+        }
+        Assert::true($depth >= 0, 'قوس إغلاق زائد في celadon.css');
+    }
+    Assert::same(0, $depth, 'أقواس غير متوازنة في celadon.css');
+
+    foreach ([
+        '[data-bs-theme="dark"]',
+        'prefers-reduced-motion',
+        '--cl-clay',
+        '--cl-gloss-jade',
+        '.cl-btn',
+        '.cl-plate',
+        '.pl-sidebar-nav',
+        '.pl-timer',
+        '.pl-option',
+        '.pl-price-card',
+        'radial-gradient',
+    ] as $needle) {
+        if ($needle === '') {
+            continue;
+        }
+        Assert::true(str_contains($css, $needle), 'مكوّن ناقص في طبقة التصميم: ' . $needle);
+    }
+
+    $js = (string) file_get_contents(BASE_PATH . '/assets/js/celadon.js');
+    foreach (['prefers-reduced-motion', 'IntersectionObserver', 'data-rail', 'data-count-to', 'clUp'] as $needle) {
+        Assert::true(str_contains($js, $needle), 'ميزة ناقصة في celadon.js: ' . $needle);
+    }
+    Assert::true(!str_contains($js, 'eval('), 'لا استخدام لـ eval في طبقة التفاعل');
+});
+
+test('الجافاسكربت في طبقة التصميم لا يستخدم مكتبات خارجية', function (): void {
+    $js = (string) file_get_contents(BASE_PATH . '/assets/js/celadon.js');
+    foreach (['import ', 'require(', 'jquery', '$('] as $needle) {
+        Assert::true(!str_contains($js, $needle), 'اعتماد على مكتبة خارجية: ' . $needle);
+    }
+    Assert::true(strlen($js) > 4000, 'ملف التفاعل أصغر من المتوقع');
+});
+
 test('أدوات النشر وملفات التوثيق موجودة', function (): void {
     foreach ([
         'install.php',
@@ -719,6 +837,9 @@ test('أدوات النشر وملفات التوثيق موجودة', function 
         'docs/التثبيت-على-سيرفر.md',
         'tools/dev/smoke.php',
         'tools/dev/validate-sql.php',
+        'tools/dev/check-design.php',
+        'assets/css/celadon.css',
+        'assets/js/celadon.js',
         '.user.ini',
         '.env.example',
     ] as $file) {

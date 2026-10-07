@@ -12,17 +12,21 @@ $breadcrumbs = $breadcrumbs ?? [];
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#0b6b3a">
+    <meta name="theme-color" content="#E8EDF7">
     <title><?= e($title ?? 'لوحة التحكم') ?> | <?= e(settings('site_name', config('app.name'))) ?></title>
     <script>
         (function () {
             var theme = localStorage.getItem('pl-theme');
             if (theme) { document.documentElement.setAttribute('data-bs-theme', theme); }
+            // علامة تفعيل الجافاسكربت: تُخفي عناصر الظهور التدريجي قبل أول رسم فقط عند توفّر السكربت،
+            // حتى تبقى كل المحتوى ظاهراً إذا كان السكربت معطّلاً في المتصفح.
+            document.documentElement.classList.add('cl-js');
         })();
     </script>
     <link rel="stylesheet" href="<?= e(asset('assets/css/bootstrap.rtl.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('assets/css/bootstrap-icons.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('assets/css/app.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset('assets/css/celadon.css')) ?>">
     <?php foreach ($pageStyles as $style): ?>
         <link rel="stylesheet" href="<?= e($style) ?>">
     <?php endforeach; ?>
@@ -61,6 +65,7 @@ $breadcrumbs = $breadcrumbs ?? [];
         </main>
         <footer class="text-center py-3 small text-muted border-top">
             <?= e(settings('site_name', config('app.name'))) ?> © <?= e(date('Y')) ?> — الإصدار <?= e(config('app.version')) ?>
+            <span class="d-block mt-1 cl-credit">التصميم مستوحى من قالب Celadon: Design by <a rel="nofollow noopener" href="https://templatemo.com" target="_blank">TemplateMo</a> <a rel="nofollow noopener" href="https://www.tooplate.com" target="_blank">Tooplate</a></span>
         </footer>
     </div>
 </div>
@@ -68,6 +73,7 @@ $breadcrumbs = $breadcrumbs ?? [];
 <script src="<?= e(asset('assets/js/bootstrap.bundle.min.js')) ?>"></script>
 <script src="<?= e(asset('assets/js/chart.min.js')) ?>"></script>
 <script src="<?= e(asset('assets/js/app.js')) ?>"></script>
+<script src="<?= e(asset('assets/js/celadon.js')) ?>"></script>
 <?php foreach ($pageScripts as $script): ?>
     <script src="<?= e($script) ?>"></script>
 <?php endforeach; ?>
