@@ -99,6 +99,14 @@ $query = static fn(array $extra = []): array => array_filter(array_merge(['batch
                         <i class="bi bi-database-add me-1"></i> إدخال <?= e(ar_digits($stats['approved'])) ?> سؤالاً
                     </button>
                 </div>
+                <div class="col-12">
+                    <div class="form-check mt-1">
+                        <input class="form-check-input" type="checkbox" value="1" id="use_row_category" name="use_row_category" checked>
+                        <label class="form-check-label small" for="use_row_category">
+                            استخدام التصنيف المقترح لكل صف (إن وُجد) بدل مجال واحد للدُفعة كلها
+                        </label>
+                    </div>
+                </div>
             </form>
             <div class="form-text mt-2">
                 الصفوف التي لا تحتوي إجابة صحيحة ستُدخل بحالة «يحتاج مراجعة» و<strong>لن تُستخدم</strong> في الاختبارات حتى تصحّحها.

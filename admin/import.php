@@ -147,6 +147,7 @@ if (is_post()) {
             'category_id' => (int) post('category_id', 0),
             'source_id'   => (int) post('source_id', 0),
             'difficulty'  => (string) post('difficulty', 'medium'),
+            'use_row_category' => (int) post('use_row_category', 0) === 1,
         ], $adminId);
 
         if ($result['imported'] > 0) {

@@ -40,6 +40,7 @@ if (($GLOBALS['argv'] ?? []) === [] && $_SERVER['APP_ARGV'] ?? '' !== '') {
 }
 
 use App\Database;
+use App\LegacyBankImporter;
 use App\QuestionImporter;
 use App\Repositories\QuestionRepository;
 use App\Security;
@@ -496,6 +497,160 @@ test('دورة الاستيراد الكاملة: تحليل ← مراجعة �
     Assert::true($batchRow !== null && (int) $batchRow['imported_rows'] === 1, 'تحديث عدّادات الدفعة');
     $batchStats = QuestionImporter::batchStats($batchId);
     Assert::same(1, (int) $batchStats['imported'], 'إحصاءات الدفعة بعد الإدخال');
+});
+
+/* ==================== 6ب) استيراد بنك أسئلة قديم ==================== */
+group('استيراد بنك قديم');
+
+test('تحليل ملف SQL قديم (tracks + questions)', function (): void {
+    $sql = "INSERT INTO tracks (name, slug, description, display_order) VALUES ('التربوي العام','general','وصف',1);\n"
+        . "INSERT INTO questions (id, category, source, stem, option_a, option_b, option_c, option_d, correct_answer) VALUES\n"
+        . "(1, 'تجميعات', 'اديوميتر', 'سؤال تجريبي اول', 'أ', 'ب', 'ج', 'د', NULL),\n"
+        . "(2, 'تجميعات', 'تحدي القدرات', 'سؤال تجريبي ثاني', 'أ', 'ب', 'ج', 'د', 'ب');\n";
+    $parsed = LegacyBankImporter::parseLegacySql($sql);
+    Assert::same(1, count($parsed['tracks']), 'مسار واحد');
+    Assert::count(2, $parsed['questions'], 'سؤالان');
+    Assert::same('اديوميتر', (string) $parsed['questions'][0]['source'], 'عمود المصدر');
+    Assert::same('ب', (string) $parsed['questions'][1]['correct_answer'], 'حرف الإجابة العربي كما ورد');
+    Assert::same(null, $parsed['questions'][0]['correct_answer'], 'NULL تُقرأ كقيمة فارغة لا كنص');
+});
+
+test('المُقسّم يحترم الفواصل المنقوطة داخل النصوص العربية', function (): void {
+    $sql = "INSERT INTO questions (id, stem) VALUES (1, 'سؤال يحتوي فاصلة منقوطة؛ داخل النص');";
+    $statements = LegacyBankImporter::splitStatements($sql);
+    Assert::count(1, $statements, 'جملة واحدة رغم وجود «؛» عربية داخل النص');
+});
+
+test('إصلاح انقلاب الهمزة و«اال» المقلوبة', function (): void {
+    $repaired = LegacyBankImporter::repair('االستراتيجية واإلدارة واألسئلة');
+    Assert::same('الاستراتيجية والإدارة والأسئلة', $repaired['text'], 'ترتيب المحارف');
+    Assert::true(($repaired['fixes']['hamza_order'] ?? 0) >= 2, 'تسجيل عدد إصلاحات الهمزة');
+    Assert::true(($repaired['fixes']['alef_lam_order'] ?? 0) >= 1, 'تسجيل إصلاح «اال»');
+});
+
+test('إصلاح الحروف المفصولة وإلصاق «ء»', function (): void {
+    $repaired = LegacyBankImporter::repair('م ن وظائف اإلدارة واالستقصا ء');
+    Assert::same('من وظائف الإدارة والاستقصاء', $repaired['text'], 'إلصاق الحرف المنفصل والهمزة');
+});
+
+test('وسم النص المشوّه بتكرار الهاء بدل تعديله', function (): void {
+    $repaired = LegacyBankImporter::repair('سههتخدم اإلدارة الصفية');
+    $issues = LegacyBankImporter::textIssues($repaired['text']);
+    Assert::true(in_array('he_noise', $issues, true), 'وسم تكرار الهاء للمراجعة البشرية');
+    Assert::true(str_contains($repaired['text'], 'سهه'), 'لا يُخمَّن أصل الكلمة: التكرار يبقى للمراجع البشري');
+    Assert::contains('الإدارة', $repaired['text'], 'الإصلاحات المؤكدة الأخرى تُنفَّذ');
+});
+
+test('تحويل الإجابة إلى حرف لاتيني (عربي ولاتيني ونص)', function (): void {
+    Assert::same('c', LegacyBankImporter::normalizeAnswer('ج'), 'ج ← c');
+    Assert::same('d', LegacyBankImporter::normalizeAnswer('د'), 'د ← d');
+    Assert::same('a', LegacyBankImporter::normalizeAnswer('الإجابة: أ'), 'استخراج الحرف من نص');
+    Assert::same('b', LegacyBankImporter::normalizeAnswer('B'), 'حروف كبيرة');
+    Assert::same(null, LegacyBankImporter::normalizeAnswer('لا أعرف'), 'لا تخمين عند الغموض');
+    Assert::same(null, LegacyBankImporter::normalizeAnswer(null), 'NULL تبقى بلا إجابة');
+});
+
+test('مطابقة الإجابة إن جاءت نصاً (صح/خطأ)', function (): void {
+    $options = ['a' => 'صح', 'b' => 'خطأ', 'c' => '', 'd' => ''];
+    Assert::same('a', LegacyBankImporter::resolveAnswerByText('صح', $options), 'مطابقة تامة للنص');
+    Assert::same(null, LegacyBankImporter::resolveAnswerByText('ربما', $options), 'لا مطابقة جزئية مُخمَّنة');
+});
+
+test('كشف أسئلة صح/خطأ وعدم وسمها باختيار ناقص', function (): void {
+    $rows = [
+        ['id' => 1, 'category' => 'عام', 'source' => 'اديوميتر', 'stem' => 'من وظائف الإدارة الصفية تنظيم البيئة الصفية المناسبة للتعلم',
+         'option_a' => 'صح', 'option_b' => 'خطأ', 'option_c' => null, 'option_d' => null, 'correct_answer' => null],
+        ['id' => 2, 'category' => 'عام', 'source' => 'اديوميتر', 'stem' => 'أي مما يلي يعد من أساليب التقويم الختامي المناسبة للمرحلة',
+         'option_a' => 'الاختبار', 'option_b' => 'الملاحظة', 'option_c' => null, 'option_d' => null, 'correct_answer' => null],
+    ];
+    $result = LegacyBankImporter::process($rows);
+    Assert::same('true_false', $result['rows'][0]['question_type'], 'الصح/الخطأ يُكتشف');
+    Assert::same('mcq', $result['rows'][1]['question_type'], 'الاختيار من متعدد يبقى mcq');
+    Assert::true(!in_array('missing_option', $result['rows'][0]['issues'], true), 'لا وسوم «اختيار ناقص» على سؤال صح/خطأ');
+    Assert::true(in_array('missing_option', $result['rows'][1]['issues'], true), 'سؤال mcq باختيارين فقط ناقص');
+});
+
+test('التصنيف الآلي على مجالات المنصة', function (): void {
+    $assessment = LegacyBankImporter::classify('الأداة التي تقيس تحصيل الطالب في نهاية الوحدة هي التقويم الختامي');
+    Assert::same('assessment', (string) $assessment['code'], 'سؤال تقويم ← القياس والتقويم');
+    $psychology = LegacyBankImporter::classify('النظرية التي تفسر التعلم بالملاحظة والتقليد عند باندورا');
+    Assert::same('educational-psychology', (string) $psychology['code'], 'سؤال نظريات تعلم ← علم النفس التربوي');
+    $unknown = LegacyBankImporter::classify('جملة لا تحمل أي كلمة مفتاحية مميزة عن التربية');
+    Assert::same(null, $unknown['code'], 'ما لا يُعرف لا يُصنَّف');
+});
+
+test('كشف التكرار داخل الملف نفسه', function (): void {
+    $row = ['id' => 1, 'category' => 'عام', 'source' => 'اديوميتر',
+        'stem' => 'أي أنواع التقويم التربوي يستخدم لمعرفة مستوى الطالب قبل بدء التدريس',
+        'option_a' => 'التقويم القبلي', 'option_b' => 'التقويم البعدي', 'option_c' => 'التقويم التكويني', 'option_d' => 'التقويم الختامي'];
+    $result = LegacyBankImporter::process([$row, $row]);
+    Assert::same(1, (int) $result['summary']['duplicates_exact'], 'تكرار تام');
+    Assert::same(1, (int) $result['rows'][1]['is_duplicate'], 'الصف الثاني موسوم مكرراً');
+    Assert::true(in_array('duplicate', $result['rows'][1]['issues'], true), 'وسم التكرار');
+});
+
+test('ملف المراجعة يستهدف import_staging ولا يلمس بنك الأسئلة', function (): void {
+    $rows = [['id' => 1, 'category' => 'عام', 'source' => 'اديوميتر',
+        'stem' => 'أي أنواع التقويم يستخدم لتشخيص صعوبات التعلم لدى الطلاب قبل التدريس',
+        'option_a' => 'التقويم التشخيصي', 'option_b' => 'التقويم الختامي', 'option_c' => 'التقويم التكويني',
+        'option_d' => 'التقويم البعدي', 'correct_answer' => null]];
+    $result = LegacyBankImporter::process($rows);
+    $sql = LegacyBankImporter::stagingSql($result['rows'], $result['summary'], 'دفعة اختبار', 'test.sql');
+    Assert::contains('INSERT INTO `import_staging`', $sql, 'الإدخال في منطقة المراجعة');
+    Assert::contains('INSERT INTO `import_batches`', $sql, 'إنشاء دفعة');
+    Assert::contains('INSERT INTO `sources`', $sql, 'توثيق المصدر');
+    Assert::true(!str_contains($sql, 'INSERT INTO `questions`'), 'لا إدخال مباشر إلى بنك الأسئلة');
+    Assert::true((bool) preg_match('/VALUES\s*\(@legacy_batch_id, 1,/u', $sql), 'ربط الصفوف بالدفعة عبر LAST_INSERT_ID');
+});
+
+test('الإدخال المباشر يتخطى كل صف بلا إجابة أو بوسم مراجعة', function (): void {
+    $rows = [
+        ['id' => 1, 'category' => 'عام', 'source' => 'اديوميتر',
+            'stem' => 'أي أنواع التقويم يستخدم لمعرفة مستوى الطالب قبل بداية التدريس الفعلي',
+            'option_a' => 'القبلي', 'option_b' => 'البعدي', 'option_c' => 'التكويني', 'option_d' => 'الختامي',
+            'correct_answer' => null],
+        ['id' => 2, 'category' => 'عام', 'source' => 'اديوميتر',
+            'stem' => 'أي أدوات القياس التربوي تستخدم لرصد السلوك الصفي بشكل متكرر',
+            'option_a' => 'قائمة الشطب', 'option_b' => 'الاختبار المقالي', 'option_c' => 'الاختبار الموضوعي',
+            'option_d' => 'المقابلة', 'correct_answer' => 'أ'],
+    ];
+    $result = LegacyBankImporter::process($rows);
+    $sql = LegacyBankImporter::promoteSql($result['rows'], 2, ['only_clean' => true]);
+    Assert::contains('قائمة الشطب', $sql, 'الصف الكامل يُدرج');
+    Assert::true(!str_contains($sql, 'القبلي'), 'الصف بلا إجابة لا يُدرج');
+    Assert::same(1, LegacyBankImporter::countClean($result['rows']), 'صف واحد جاهز للإدخال الفوري');
+});
+
+test('ملخص الصفوف (summarize) مطابق لملخص المعالجة', function (): void {
+    $rows = [
+        ['id' => 1, 'category' => 'عام', 'source' => 'اديوميتر',
+            'stem' => 'أي أنواع التقويم يستخدم لمعرفة مستوى الطالب قبل بداية التدريس الفعلي',
+            'option_a' => 'القبلي', 'option_b' => 'البعدي', 'option_c' => 'التكويني', 'option_d' => 'الختامي',
+            'correct_answer' => null],
+        ['id' => 2, 'category' => 'عام', 'source' => 'تحدي القدرات',
+            'stem' => 'أي أدوات القياس التربوي تستخدم لرصد السلوك الصفي بشكل متكرر',
+            'option_a' => 'قائمة الشطب', 'option_b' => 'الاختبار المقالي', 'option_c' => 'الاختبار الموضوعي',
+            'option_d' => 'المقابلة', 'correct_answer' => 'أ'],
+    ];
+    $result = LegacyBankImporter::process($rows);
+    $again = LegacyBankImporter::summarize($result['rows']);
+    Assert::same((int) $result['summary']['total'], (int) $again['total'], 'الإجمالي');
+    Assert::same((int) $result['summary']['missing_answer'], (int) $again['missing_answer'], 'عدد الأسئلة بلا إجابة');
+    Assert::same((int) $result['summary']['valid'], (int) $again['valid'], 'عدد الصالح');
+});
+
+test('تقرير المراجعة وقائمة CSV تُنتجان بترميز صحيح', function (): void {
+    $rows = [['id' => 1, 'category' => 'عام', 'source' => 'اديوميتر',
+        'stem' => 'أي أنواع التقويم يستخدم لمعرفة مستوى الطالب قبل بداية التدريس الفعلي',
+        'option_a' => 'القبلي', 'option_b' => 'البعدي', 'option_c' => 'التكويني', 'option_d' => 'الختامي',
+        'correct_answer' => null]];
+    $result = LegacyBankImporter::process($rows);
+    $csv = LegacyBankImporter::reviewCsv($result['rows']);
+    Assert::true(str_starts_with($csv, "\xEF\xBB\xBF"), 'BOM ليفتح Excel الملف عربياً');
+    Assert::contains('القبلي', $csv, 'محتوى الاختيارات');
+    $report = LegacyBankImporter::reportMarkdown($result['summary'], $result['rows'], ['file' => 'x.sql']);
+    Assert::contains('تقرير استيراد بنك أسئلة قديم', $report, 'عنوان التقرير');
+    Assert::contains('تخمين الإجابة ممنوع', $report, 'قاعدة عدم تخمين الإجابة مذكورة صراحة');
 });
 
 /* ==================== 7) المخازن والخدمات ==================== */

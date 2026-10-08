@@ -683,7 +683,9 @@ final class QuestionImporter
         $trackId = (int) ($options['track_id'] ?? 0);
         $categoryId = (int) ($options['category_id'] ?? 0);
         $sourceId = (int) ($options['source_id'] ?? 0);
-        $difficulty = in_array((string) ($options['difficulty'] ?? 'medium'), ['easy', 'medium', 'hard'], true) ? (string) $options['difficulty'] : 'medium';
+        // ملاحظة: القراءة تتم مرة واحدة ثم يُتحقق منها، لتجنب قراءة مفتاح غير موجود
+        $difficultyOption = (string) ($options['difficulty'] ?? 'medium');
+        $difficulty = in_array($difficultyOption, ['easy', 'medium', 'hard'], true) ? $difficultyOption : 'medium';
 
         if ($trackId <= 0) {
             return ['ok' => false, 'message' => 'يجب اختيار المسار قبل الإدخال.', 'imported' => 0, 'skipped' => 0, 'warnings' => []];
@@ -700,6 +702,15 @@ final class QuestionImporter
         $imported = 0;
         $skipped = 0;
         $warnings = [];
+
+        // خيار «استخدام التصنيف المقترح لكل صف»: يحوّل category_guess (اسم المجال) إلى معرّف مجال
+        $useRowCategory = (bool) ($options['use_row_category'] ?? false);
+        $categoryByName = [];
+        if ($useRowCategory) {
+            foreach ($db->all('SELECT `id`, `name_ar` FROM `categories` WHERE track_id = :t', ['t' => $trackId]) as $category) {
+                $categoryByName[Str::normalizeArabic((string) $category['name_ar'])] = (int) $category['id'];
+            }
+        }
 
         foreach ($rows as $row) {
             $questionText = trim((string) ($row['question_text'] ?? ''));
@@ -719,13 +730,35 @@ final class QuestionImporter
 
             $needsReview = $row['correct_answer'] === null || (int) $row['needs_review'] === 1;
 
+            // المجال: تصنيف الصف إن كان متاحاً ومطابقاً لمجال في المسار، وإلا مجال الدُفعة
+            $rowCategoryId = $categoryId;
+            if ($useRowCategory && trim((string) ($row['category_guess'] ?? '')) !== '') {
+                $key = Str::normalizeArabic((string) $row['category_guess']);
+                if (isset($categoryByName[$key])) {
+                    $rowCategoryId = $categoryByName[$key];
+                }
+            }
+
+            // سبب المراجعة: من وسوم الصف إن وُجدت، وإلا سبب الإجابة الناقصة
+            $reviewNote = null;
+            if ($needsReview) {
+                $rowIssues = json_decode((string) ($row['issues'] ?? ''), true);
+                $noteText = is_array($rowIssues) && $rowIssues !== []
+                    ? implode(' | ', array_map('strval', $rowIssues))
+                    : 'مستورد من ملف: الإجابة غير مؤكدة';
+                $reviewNote = mb_substr($noteText, 0, 250, 'UTF-8');
+            }
+
             try {
                 $questionId = $repo->create([
                     'track_id'       => $trackId,
-                    'category_id'    => $categoryId > 0 ? $categoryId : null,
+                    'category_id'    => $rowCategoryId > 0 ? $rowCategoryId : null,
                     'source_id'      => $sourceId > 0 ? $sourceId : null,
                     'question_text'  => $questionText,
-                    'question_type'  => 'mcq',
+                    // سؤال باختيارين فقط (صح/خطأ) يُسجَّل بنوعه الصحيح
+                    'question_type'  => (($row['option_c'] ?? null) === null || (string) $row['option_c'] === '')
+                                        && (($row['option_d'] ?? null) === null || (string) $row['option_d'] === '')
+                                        ? 'true_false' : 'mcq',
                     'option_a'       => (string) $row['option_a'],
                     'option_b'       => (string) $row['option_b'],
                     'option_c'       => $row['option_c'] !== null ? (string) $row['option_c'] : null,
@@ -735,7 +768,7 @@ final class QuestionImporter
                     'difficulty'     => $row['difficulty'] ?: $difficulty,
                     'source_page'    => $row['source_page'],
                     'needs_review'   => $needsReview ? 1 : 0,
-                    'review_note'    => $needsReview ? 'مستورد من ملف: الإجابة غير مؤكدة' : null,
+                    'review_note'    => $reviewNote,
                     'active'         => 1,
                     'content_hash'   => $hash,
                     'created_by'     => $adminId,
