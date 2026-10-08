@@ -6,7 +6,7 @@
 
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
@@ -556,10 +556,8 @@ def add_footer(section, idx):
 
 # ============================ بناء الوثيقة ============================
 
-def build(doc_data, idx):
-    doc = Document()
-
-    # إعدادات الصفحة: A4 وهوامش تكفي لمحتوى صفحة واحدة
+def setup_document(doc):
+    """إعداد الصفحة والنمط الافتراضي."""
     section = doc.sections[0]
     section.page_width = Cm(21.0)
     section.page_height = Cm(29.7)
@@ -570,7 +568,6 @@ def build(doc_data, idx):
     section.footer_distance = Cm(0.5)
     add_page_border(section)
 
-    # النمط الافتراضي
     normal = doc.styles["Normal"]
     normal.font.name = FONT
     normal.font.size = Pt(10)
@@ -582,8 +579,11 @@ def build(doc_data, idx):
     rFonts.set(qn("w:ascii"), FONT)
     rFonts.set(qn("w:hAnsi"), FONT)
     rFonts.set(qn("w:cs"), FONT)
+    return section
 
-    # المحتوى
+
+def populate_content(doc, doc_data):
+    """محتوى صفحة الإضاءة الواحدة."""
     add_header(doc, doc_data["title"])
     add_meta(doc)
 
@@ -615,15 +615,85 @@ def build(doc_data, idx):
         (PRACTICE_LINE, 9, False, DARK_TEXT),
     ])
 
-    add_footer(section, idx)
 
-    # الخصائص الوصفية
+def set_props(doc, title):
     props = doc.core_properties
-    props.title = doc_data["title"]
+    props.title = title
     props.author = "المرشد الطلابي"
     props.subject = "نموذج معايير التقويم والاعتماد المدرسي 2026 — نواتج التعلم"
     props.comments = "المؤشر: يلتزم المتعلمون بقواعد السلوك والانضباط المدرسي"
 
+
+def page_break(doc):
+    p = doc.add_paragraph()
+    run = p.add_run()
+    run.add_break(WD_BREAK.PAGE)
+    return p
+
+
+def add_index_item(doc, num, title):
+    p = doc.add_paragraph()
+    rtl_paragraph(p, "right")
+    paragraph_spacing(p, after=3, line=1.15)
+    pf = p.paragraph_format
+    pf.right_indent = Cm(0.7)
+    pf.first_line_indent = Cm(-0.7)
+    style_run(p.add_run(f"الإضاءة {num} "), size=10.5, bold=True, color=ACCENT)
+    style_run(p.add_run(f"— {title}"), size=10.5, color=DARK_TEXT)
+    return p
+
+
+def build(doc_data, idx):
+    """وثيقة مستقلة بصفحة واحدة لكل إضاءة."""
+    doc = Document()
+    section = setup_document(doc)
+    populate_content(doc, doc_data)
+    add_footer(section, f"الإضاءة {idx} من 8")
+    set_props(doc, doc_data["title"])
+    return doc
+
+
+def build_cover(doc):
+    """صفحة الغلاف والفهرس للوثيقة الموحدة."""
+    add_header(doc, "الالتزام بقواعد السلوك والانضباط المدرسي — الإضاءات الثمانية")
+    add_meta(doc)
+
+    add_section_heading(doc, "عن هذه الوثيقة")
+    p = doc.add_paragraph()
+    rtl_paragraph(p, "right")
+    paragraph_spacing(p, after=4, line=1.2)
+    style_run(
+        p.add_run(
+            "دليل تطبيقي موحّد للمرشد الطلابي يجمع الإضاءات الثمانية للمؤشر "
+            "«يلتزم المتعلمون بقواعد السلوك والانضباط المدرسي»، مطوّرة وممتدّة إلى أدوار "
+            "وخطوات ومؤشرات نجاح وسيناريوهات تطبيقية، وفق متطلبات نموذج معايير التقويم "
+            "والاعتماد المدرسي للعام 2026م. كل إضاءة في صفحة مستقلة بعنوانها."
+        ),
+        size=11,
+        color=DARK_TEXT,
+    )
+
+    add_section_heading(doc, "فهرس الإضاءات الثمانية")
+    for i, data in enumerate(DOCS, start=1):
+        title = data["title"].split(": ", 1)[-1]
+        add_index_item(doc, i, title)
+
+    add_box(doc, [
+        (TOOLS_LINE, 9, True, PRIMARY),
+        (PRACTICE_LINE, 9, False, DARK_TEXT),
+    ])
+
+
+def build_combined():
+    """الوثيقة الموحدة: غلاف + فهرس ثم الإضاءات الثمانية، كل إضاءة في صفحة."""
+    doc = Document()
+    section = setup_document(doc)
+    add_footer(section, "الوثيقة الموحدة — الإضاءات الثمانية")
+    build_cover(doc)
+    for data in DOCS:
+        page_break(doc)
+        populate_content(doc, data)
+    set_props(doc, "الوثيقة الموحدة — إضاءات السلوك والانضباط المدرسي (8 صفحات)")
     return doc
 
 
@@ -636,6 +706,11 @@ def main():
         path = os.path.join(out_dir, data["file"])
         doc.save(path)
         print(f"[{i}/8] {path}")
+
+    combined = build_combined()
+    combined_path = os.path.join(out_dir, "00-الوثيقة-الموحدة-الإضاءات-الثمانية.docx")
+    combined.save(combined_path)
+    print(f"[موحد] {combined_path}")
 
 
 if __name__ == "__main__":
