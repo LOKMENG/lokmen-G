@@ -51,6 +51,18 @@ final class FakeDatabase
         'users' => ['role' => 'student', 'status' => 'active', 'failed_login_count' => 0],
         'testimonials' => ['rating' => 5, 'consent' => 0, 'is_published' => 0, 'sort_order' => 0],
         'user_category_stats' => ['total_answered' => 0, 'correct_answers' => 0, 'wrong_answers' => 0, 'accuracy' => 0],
+        'categories' => ['parent_id' => null, 'code' => null, 'slug' => null, 'name_en' => null,
+                         'icon' => null, 'color' => null, 'sort_order' => 0, 'is_active' => 1, 'track_id' => null],
+        'tracks' => ['code' => null, 'slug' => null, 'name_en' => null, 'description' => null,
+                     'icon' => null, 'color' => null, 'sort_order' => 0, 'is_active' => 1],
+        'sources' => ['type' => 'pdf', 'is_active' => 1, 'license_note' => null, 'notes' => null],
+        'exam_templates' => ['mode' => 'mock', 'duration_minutes' => 0, 'pass_percentage' => 60,
+                             'randomize_questions' => 1, 'randomize_options' => 0, 'show_explanation' => 1,
+                             'require_subscription' => 1, 'max_attempts' => 0, 'is_active' => 1, 'sort_order' => 0],
+        'exam_attempts' => ['title' => null, 'mode' => 'mock', 'status' => 'in_progress', 'difficulty' => 'any',
+                            'total_questions' => 0, 'duration_minutes' => 0, 'randomize_options' => 0,
+                            'correct_count' => 0, 'wrong_count' => 0, 'unanswered_count' => 0,
+                            'score' => 0, 'passed' => 0, 'time_spent_seconds' => 0, 'show_explanation' => 1],
     ];
 
 
@@ -87,10 +99,18 @@ final class FakeDatabase
     {
         self::$store[$table] = [];
         foreach ($rows as $row) {
-            self::$store[$table][] = $row;
-            if (isset($row['id'])) {
+            // نفس قواعد INSERT: تُعبَّأ الأعمدة الافتراضية، ويُولَّد id تلقائياً إن لم يُذكر
+            foreach (self::$defaults[$table] ?? [] as $column => $default) {
+                if (!array_key_exists($column, $row)) {
+                    $row[$column] = $default;
+                }
+            }
+            if (!isset($row['id'])) {
+                $row['id'] = ++self::$sequence;
+            } else {
                 self::$sequence = max(self::$sequence, (int) $row['id']);
             }
+            self::$store[$table][] = $row;
         }
     }
 
@@ -204,6 +224,38 @@ final class FakeDatabase
         $statement->setResult($this->result, $this->rowCount);
     }
 
+    /**
+     * حذف المجموعات الموضوعة بين قوسين التي تبدأ بـ SELECT من سلسلة الأعمدة،
+     * حتى لا تُحسب دوال التجميع داخل استعلام فرعي مترابط على أنها تجميع لكل الصفوف.
+     */
+    private function stripScalarSubqueries(string $columns): string
+    {
+        $result = '';
+        $length = strlen($columns);
+        $i = 0;
+        while ($i < $length) {
+            $char = $columns[$i];
+            if ($char === '(' && preg_match('/^\(\s*SELECT\b/is', substr($columns, $i)) === 1) {
+                $j = $i + 1;
+                $depth = 1;
+                while ($j < $length && $depth > 0) {
+                    if ($columns[$j] === '(') {
+                        $depth++;
+                    } elseif ($columns[$j] === ')') {
+                        $depth--;
+                    }
+                    $j++;
+                }
+                $result .= ' __subquery__ ';
+                $i = $j;
+                continue;
+            }
+            $result .= $char;
+            $i++;
+        }
+        return $result;
+    }
+
     private function runSelect(string $sql, FakeStatement $statement): void
     {
         $sql = $this->stripAliases($sql);
@@ -242,7 +294,9 @@ final class FakeDatabase
         if (preg_match('/\sGROUP\s+BY\s+([`A-Za-z0-9_.]+)/i', $tail, $groupMatch) === 1) {
             $groupColumn = $this->clean($groupMatch[1]);
         }
-        $hasAggregate = preg_match('/\b(COUNT|SUM|AVG|MIN|MAX)\s*\(/i', $columns) === 1;
+        // استعلام فرعي مترابط في قائمة الأعمدة (مثل عدد الأسئلة لكل مصدر) ليس دالة تجميع على كل الصفوف
+        $columnsWithoutSubqueries = $this->stripScalarSubqueries($columns);
+        $hasAggregate = preg_match('/\b(COUNT|SUM|AVG|MIN|MAX)\s*\(/i', $columnsWithoutSubqueries) === 1;
         if ($groupColumn !== null || $hasAggregate || preg_match('/\sHAVING\s+/i', $tail) === 1) {
             $aliasMap = $this->selectExpressions($columns);
             $expressions = $this->splitList($columns);
@@ -301,7 +355,7 @@ final class FakeDatabase
             };
             $this->rowCount = count($rows);
             $this->result = [[$name => $aggregated]];
-        } elseif (stripos($columns, 'COUNT(') !== false) {
+        } elseif (stripos($columnsWithoutSubqueries, 'COUNT(') !== false) {
             $this->rowCount = count($rows);
             $this->result = [['c' => $this->rowCount]];
         } elseif ($columns === '*') {

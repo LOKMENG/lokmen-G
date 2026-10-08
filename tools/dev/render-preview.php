@@ -92,13 +92,23 @@ function preview_seed(): void
         ['id' => 1, 'user_id' => 2, 'plan_id' => 1, 'status' => 'active', 'duration_days' => 365,
          'starts_at' => date('Y-m-d H:i:s', time() - 86400 * 60), 'expires_at' => date('Y-m-d H:i:s', time() + 86400 * 305)],
     ]);
+    FakeDatabase::seed('sources', [
+        ['id' => 1, 'name' => 'كتاب الرخصة المهنية — التربوي العام', 'type' => 'book', 'author' => 'مجموعة مؤلفين',
+         'year' => 1445, 'license_note' => 'نسخة يملك المالك حق استخدامها داخل المنصة', 'is_active' => 1],
+        ['id' => 2, 'name' => 'ملف PDF: تجميعات تخصص الحاسب', 'type' => 'pdf',
+         'license_note' => 'ملف قدّمه المالك — مرخّص للاستخدام داخل المنصة', 'is_active' => 1],
+        ['id' => 3, 'name' => 'أسئلة من إعداد المشرف التربوي', 'type' => 'teacher', 'author' => 'أ. عبدالله',
+         'license_note' => NULL, 'is_active' => 1],
+    ]);
     FakeDatabase::seed('exam_templates', [
-        ['id' => 1, 'name_ar' => 'الاختبار التربوي الشامل', 'slug' => 'general-full', 'track_id' => 1,
-         'questions_count' => 5, 'duration_minutes' => 20, 'pass_percentage' => 60, 'is_active' => 1, 'is_free' => 1,
-         'show_explanation' => 1, 'require_subscription' => 0],
-        ['id' => 2, 'name_ar' => 'التخصص: حاسب آلي', 'slug' => 'cs-full', 'track_id' => 2,
-         'questions_count' => 10, 'duration_minutes' => 30, 'pass_percentage' => 60, 'is_active' => 1, 'is_free' => 0,
-         'show_explanation' => 1, 'require_subscription' => 1],
+        ['id' => 1, 'title' => 'الاختبار التربوي الشامل', 'slug' => 'general-full', 'track_id' => 1,
+         'description' => 'خمسون سؤالاً تغطي محاور الاختبار التربوي العام بنسبة نجاح 60%.',
+         'question_count' => 5, 'duration_minutes' => 20, 'pass_percentage' => 60, 'is_active' => 1,
+         'mode' => 'mock', 'difficulty' => 'any', 'show_explanation' => 1, 'require_subscription' => 0, 'sort_order' => 1],
+        ['id' => 2, 'title' => 'التخصص: حاسب آلي', 'slug' => 'cs-full', 'track_id' => 2,
+         'description' => 'اختبار تخصصي لمعلمي الحاسب الآلي: البرمجة وقواعد البيانات والشبكات.',
+         'question_count' => 10, 'duration_minutes' => 30, 'pass_percentage' => 60, 'is_active' => 1,
+         'mode' => 'mock', 'difficulty' => 'any', 'show_explanation' => 1, 'require_subscription' => 1, 'sort_order' => 2],
     ]);
     FakeDatabase::seed('testimonials', [
         ['id' => 1, 'user_id' => 2, 'name' => 'نورة العتيبي', 'role' => 'معلمة حاسب', 'city' => 'الرياض',
