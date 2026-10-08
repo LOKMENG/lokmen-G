@@ -545,13 +545,37 @@ def add_box(doc, lines):
     return table
 
 
-def add_footer(section, idx):
+def add_field(paragraph, instr, placeholder="1", size=8):
+    """إضافة حقل Word تلقائي (مثل رقم الصفحة)."""
+    fld = OxmlElement("w:fldSimple")
+    fld.set(qn("w:instr"), instr)
+    r = OxmlElement("w:r")
+    rPr = OxmlElement("w:rPr")
+    rFonts = OxmlElement("w:rFonts")
+    rFonts.set(qn("w:ascii"), FONT)
+    rFonts.set(qn("w:hAnsi"), FONT)
+    rFonts.set(qn("w:cs"), FONT)
+    sz = OxmlElement("w:sz"); sz.set(qn("w:val"), str(int(size * 2)))
+    szCs = OxmlElement("w:szCs"); szCs.set(qn("w:val"), str(int(size * 2)))
+    color = OxmlElement("w:color"); color.set(qn("w:val"), "6B7B80")
+    rPr.append(rFonts); rPr.append(sz); rPr.append(szCs); rPr.append(color)
+    t = OxmlElement("w:t"); t.text = placeholder
+    r.append(rPr); r.append(t)
+    fld.append(r)
+    paragraph._p.append(fld)
+
+
+def add_footer(section, text, with_pages=False):
     footer = section.footer
     p = footer.paragraphs[0]
     rtl_paragraph(p, "center")
     paragraph_spacing(p, before=2, after=0)
-    text = f"إعداد: المرشد الطلابي — وثيقة العمل الإرشادي | الإضاءة {idx} من 8 | العام الدراسي 2026م"
     style_run(p.add_run(text), size=8, color="6B7B80")
+    if with_pages:
+        style_run(p.add_run("  |  صفحة "), size=8, color="6B7B80")
+        add_field(p, " PAGE ")
+        style_run(p.add_run(" من "), size=8, color="6B7B80")
+        add_field(p, " NUMPAGES ", placeholder="9")
 
 
 # ============================ بناء الوثيقة ============================
@@ -648,7 +672,7 @@ def build(doc_data, idx):
     doc = Document()
     section = setup_document(doc)
     populate_content(doc, doc_data)
-    add_footer(section, f"الإضاءة {idx} من 8")
+    add_footer(section, f"إعداد: المرشد الطلابي — وثيقة العمل الإرشادي | الإضاءة {idx} من 8 | العام الدراسي 2026م")
     set_props(doc, doc_data["title"])
     return doc
 
@@ -673,6 +697,13 @@ def build_cover(doc):
         color=DARK_TEXT,
     )
 
+    add_box(doc, [
+        ("بيانات التوثيق (تُستكمل يدويًا):", 9, True, PRIMARY),
+        ("المدرسة: ......................................    |    "
+         "المرشد الطلابي: ......................................    |    "
+         "التاريخ: ......... / ......... / 1447هـ", 9.5, False, DARK_TEXT),
+    ])
+
     add_section_heading(doc, "فهرس الإضاءات الثمانية")
     for i, data in enumerate(DOCS, start=1):
         title = data["title"].split(": ", 1)[-1]
@@ -688,7 +719,7 @@ def build_combined():
     """الوثيقة الموحدة: غلاف + فهرس ثم الإضاءات الثمانية، كل إضاءة في صفحة."""
     doc = Document()
     section = setup_document(doc)
-    add_footer(section, "الوثيقة الموحدة — الإضاءات الثمانية")
+    add_footer(section, "إعداد: المرشد الطلابي — الوثيقة الموحدة للإضاءات الثمانية | العام الدراسي 2026م", with_pages=True)
     build_cover(doc)
     for data in DOCS:
         page_break(doc)
