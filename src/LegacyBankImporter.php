@@ -47,6 +47,7 @@ final class LegacyBankImporter
         'uncategorized'   => 'لم يُتعرَّف على المجال آلياً — يحتاج تصنيفاً يدوياً',
         'aptitude_scope'  => 'سؤال قدرات/لغة عامة (خارج نطاق الرخصة المهنية) — قرار المالك',
         'duplicate'       => 'مكرر مع صف آخر في الملف نفسه',
+        'answer_conflict' => 'تعارض بين الإجابة الموسومة في الملف والشرح أو الخيارات — يحتاج قراراً بشرياً',
     ];
 
     /** الحروف التي لا تصح كلمةً مستقلة في العربية — إلصاقها بما بعدها إصلاح مؤكد */
@@ -129,6 +130,35 @@ final class LegacyBankImporter
     // =====================================================================
     //  2) تحليل ملف SQL قديم
     // =====================================================================
+
+    /**
+     * تحليل أي ملف SQL إلى جمل INSERT فقط، مجمّعة باسم الجدول.
+     * (مفيد للملفات ذات المخططات المختلفة: question/choix/explication ...)
+     * @return array<string,array<int,array<string,mixed>>>
+     */
+    public static function parseSqlFile(string $sql): array
+    {
+        $sql = str_replace(["\r\n", "\r"], "\n", $sql);
+        $tables = [];
+        foreach (self::splitStatements($sql) as $statement) {
+            if (!preg_match('/INSERT\s+INTO\s+`?([a-zA-Z0-9_]+)`?\s*\(([^)]*)\)\s*VALUES\s*(.+)$/is', $statement, $match)) {
+                continue;
+            }
+            $table = strtolower($match[1]);
+            $columns = array_map(
+                static fn(string $column): string => trim($column, " \t\n`"),
+                explode(',', $match[2])
+            );
+            foreach (self::parseTuples($match[3]) as $values) {
+                $row = [];
+                foreach ($columns as $index => $column) {
+                    $row[$column] = $values[$index] ?? null;
+                }
+                $tables[$table][] = $row;
+            }
+        }
+        return $tables;
+    }
 
     /**
      * تحليل نص ملف SQL قديم وإرجاع الصفوف الخام.
@@ -1161,6 +1191,8 @@ final class LegacyBankImporter
         $onlyClean = (bool) ($options['only_clean'] ?? true);
         $allowMissing = (bool) ($options['allow_missing_answer'] ?? false);
         $sourceIds = $options['source_ids'] ?? [];
+        // تعبير SQL جاهز للمصدر (مثل: SELECT id FROM sources WHERE name = ... LIMIT 1)
+        $sourceIdSql = isset($options['source_id_sql']) ? (string) $options['source_id_sql'] : null;
         $lines = [];
         $lines[] = '-- إدخال الأسئلة المستوفية للشروط إلى جدول questions مباشرة';
         $lines[] = '-- المعايير: صف صالح + غير مكرر + له إجابة صحيحة' . ($onlyClean ? ' + بلا وسوم مراجعة نصية' : ' (يسمح بوسوم المراجعة)');
@@ -1182,18 +1214,28 @@ final class LegacyBankImporter
                 continue;
             }
             $sourceId = $sourceIds[$row['source_name']] ?? null;
+            $sourceExpression = $sourceIdSql !== null
+                ? $sourceIdSql
+                : ($sourceId !== null ? (string) $sourceId : 'NULL');
             $lines[] = 'INSERT INTO `questions` (`track_id`, `category_id`, `source_id`, `question_text`,'
                 . ' `question_type`, `option_a`, `option_b`, `option_c`, `option_d`, `correct_answer`,'
-                . ' `difficulty`, `needs_review`, `review_note`, `content_hash`, `active`) VALUES ('
+                . ' `explanation`, `difficulty`, `year`, `source_note`, `needs_review`, `review_note`,'
+                . ' `content_hash`, `active`) VALUES ('
                 . $trackId . ', (SELECT `id` FROM `categories` WHERE `code` = ' . self::sqlString((string) $row['category_code']) . ' LIMIT 1), '
-                . ($sourceId !== null ? (string) $sourceId : 'NULL') . ', '
+                . $sourceExpression . ', '
                 . self::sqlString($row['question_text']) . ", '" . ($row['question_type'] ?? 'mcq') . "', "
                 . self::sqlString($row['options']['a']) . ', ' . self::sqlString($row['options']['b']) . ', '
                 . self::sqlString($row['options']['c'] !== '' ? $row['options']['c'] : null) . ', '
                 . self::sqlString($row['options']['d'] !== '' ? $row['options']['d'] : null) . ', '
-                . self::sqlString($row['correct_answer']) . ", 'medium', "
+                . self::sqlString($row['correct_answer']) . ', '
+                . self::sqlString($row['explanation'] ?? null) . ", '"
+                . (in_array((string) ($row['difficulty'] ?? ''), ['easy', 'medium', 'hard'], true) ? (string) $row['difficulty'] : 'medium') . "', "
+                . (isset($row['year']) && $row['year'] !== null ? (string) (int) $row['year'] : 'NULL') . ', '
+                . self::sqlString($row['source_note'] ?? null) . ', '
                 . ((int) $row['needs_review'] === 1 ? '1' : '0') . ', '
-                . self::sqlString((int) $row['needs_review'] === 1 ? 'مستورد من ملف قديم: ' . implode('، ', array_map([self::class, 'issueLabel'], $row['issues'])) : null)
+                . self::sqlString((int) $row['needs_review'] === 1
+                    ? (string) ($row['review_note'] ?? ('مستورد من ملف قديم: ' . implode('، ', array_map([self::class, 'issueLabel'], $row['issues']))))
+                    : null)
                 . ', ' . self::sqlString($row['content_hash']) . ', 1);';
             $count++;
         }

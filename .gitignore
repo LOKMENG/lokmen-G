@@ -11,6 +11,10 @@
 !/uploads/**/.gitkeep
 !/uploads/.htaccess
 
+# ---------- مخرجات الاستيراد (ملفات يولّدها المستورد للمالك) ----------
+/storage/import/*
+!/storage/import/.gitkeep
+
 # ---------- سجلات ومؤقتات ----------
 /storage/logs/*
 !/storage/logs/.gitkeep
