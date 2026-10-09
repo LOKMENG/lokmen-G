@@ -27,9 +27,9 @@
 ### إعادة التوليد
 
 ```bash
-python3 -m venv .venv && .venv/bin/pip install python-docx
-.venv/bin/python scripts/generate_onepagers.py
+python3 -m pip install --target .pytools --break-system-packages python-docx pillow
+PYTHONPATH=.pytools python3 scripts/generate_onepagers.py
 ```
 
-القالب: خط Sakkal Majalla، ألوان هادئة (أخضر أزرق داكن + ذهبي)، إطار صفحة، جداول ترويسة وسياق،
-وأدوات التقويم المحددة بعلامة الصح في النموذج.
+القالب: هوية «مدارس أجيال للبنات المتميزة» (ترويسة وزارة التعليم / التنمية المتكاملة، تذييل ISO 9001 وAiAA)،
+الخط: **Calibri Light**، الألوان: أخضر الهوية #6AA84F + أزرق داكن #1F4E79.

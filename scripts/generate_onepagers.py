@@ -6,7 +6,7 @@
 
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK, WD_BREAK
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
@@ -256,10 +256,105 @@ DOCS = [
     },
 ]
 
+# ============================ عناصر الهوية (صور) ============================
+import os
+import math
+from PIL import Image, ImageDraw
+
+ASSETS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
+
+GREEN = (106, 168, 79, 255)       # أخضر الهوية
+GREEN_DK = (78, 138, 56, 255)
+NAVY = (31, 78, 121, 255)         # أزرق داكن
+BLUE = (46, 117, 182, 255)        # أزرق الشعار
+GRAY = (127, 127, 127, 255)
+RED = (192, 0, 0, 255)
+
+
+def _canvas(size):
+    return Image.new("RGBA", (size, size), (255, 255, 255, 0))
+
+
+def make_marks():
+    os.makedirs(ASSETS, exist_ok=True)
+
+    # شعار المملكة (تقريبي: دائرة خضراء + نخلة وسيفان)
+    size = 240
+    img = _canvas(size)
+    d = ImageDraw.Draw(img)
+    d.ellipse([8, 8, size - 8, size - 8], outline=GREEN_DK, width=8)
+    cx, cy = size // 2, int(size * 0.50)
+    d.polygon([(cx - 8, size * 0.80), (cx + 8, size * 0.80), (cx + 4, cy), (cx - 4, cy)], fill=GREEN_DK)
+    for ang in (200, 235, 270, 305, 340):
+        rad = math.radians(ang)
+        x2 = cx + math.cos(rad) * size * 0.24
+        y2 = cy + math.sin(rad) * size * 0.24
+        d.line([(cx, cy), (x2, y2)], fill=GREEN, width=10)
+        d.ellipse([x2 - 7, y2 - 7, x2 + 7, y2 + 7], fill=GREEN)
+    for y in (size * 0.62, size * 0.70):
+        d.line([(size * 0.24, y), (size * 0.76, y)], fill=GREEN_DK, width=9)
+        d.polygon([(size * 0.24, y), (size * 0.20, y - 8), (size * 0.20, y + 8)], fill=GREEN_DK)
+        d.polygon([(size * 0.76, y), (size * 0.80, y - 8), (size * 0.80, y + 8)], fill=GREEN_DK)
+    img.save(os.path.join(ASSETS, "mark_ksa.png"))
+
+    # شعار مدارس أجيال (دائرة زرقاء بلفّة بيضاء)
+    size = 240
+    img = _canvas(size)
+    d = ImageDraw.Draw(img)
+    d.ellipse([10, 10, size - 10, size - 10], fill=BLUE)
+    d.arc([40, 40, size - 40, size - 40], start=200, end=110, fill=(255, 255, 255, 255), width=16)
+    d.arc([70, 70, size - 70, size - 70], start=180, end=90, fill=(255, 255, 255, 255), width=12)
+    d.ellipse([size * 0.42, size * 0.42, size * 0.58, size * 0.58], fill=(255, 255, 255, 255))
+    d.polygon([(size * 0.62, 24), (size * 0.74, 24), (size * 0.68, 52)], fill=GREEN)
+    img.save(os.path.join(ASSETS, "mark_ajyal.png"))
+
+    # معالم خضراء (ماسات) لشعار التنمية المتكاملة
+    size = 240
+    img = _canvas(size)
+    d = ImageDraw.Draw(img)
+    pts = [(60, 70, 34), (120, 52, 42), (180, 74, 30), (95, 118, 26), (150, 118, 24)]
+    for x, y, r in pts:
+        d.polygon([(x, y - r), (x + r, y), (x, y + r), (x - r, y)], fill=GREEN)
+    d.line([(40, 168), (200, 168)], fill=BLUE, width=10)
+    d.line([(70, 192), (170, 192)], fill=GREEN, width=8)
+    img.save(os.path.join(ASSETS, "mark_dev.png"))
+
+    # أيقونات التذييل: ذرة / رسم بياني / شخص
+    size = 120
+    img = _canvas(size)
+    d = ImageDraw.Draw(img)
+    cx = cy = size // 2
+    d.ellipse([cx - 10, cy - 10, cx + 10, cy + 10], fill=BLUE)
+    for ang in (0, 60, 120):
+        box = [cx - 48, cy - 22, cx + 48, cy + 22]
+        layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        ld = ImageDraw.Draw(layer)
+        ld.ellipse(box, outline=GREEN, width=7)
+        layer = layer.rotate(ang, center=(cx, cy))
+        img = Image.alpha_composite(img, layer)
+    img.save(os.path.join(ASSETS, "icon_atom.png"))
+
+    img = _canvas(size)
+    d = ImageDraw.Draw(img)
+    d.rectangle([20, 60, 40, 100], fill=BLUE)
+    d.rectangle([50, 40, 70, 100], fill=GREEN)
+    d.rectangle([80, 22, 100, 100], fill=NAVY)
+    d.line([14, 104, 106, 104], fill=GRAY, width=6)
+    img.save(os.path.join(ASSETS, "icon_chart.png"))
+
+    img = _canvas(size)
+    d = ImageDraw.Draw(img)
+    d.ellipse([42, 16, 78, 52], fill=BLUE)
+    d.pieslice([26, 58, 94, 128], start=180, end=360, fill=GREEN)
+    img.save(os.path.join(ASSETS, "icon_person.png"))
+
+
 # ============================ مساعدات XML ============================
 
+FONT = "Calibri Light"
+
+
 def _insert_before(parent, element, *successors):
-    """إدراج عنصر في موضعه الصحيح حسب ترتيب مخطط OOXML."""
     for tag in successors:
         found = parent.find(qn(tag))
         if found is not None:
@@ -295,11 +390,6 @@ TBLPR_BIDI_SUCC = (
     "w:tblCellSpacing", "w:tblInd", "w:tblBorders", "w:shd", "w:tblLayout",
     "w:tblCellMar", "w:tblLook", "w:tblCaption", "w:tblDescription", "w:tblPrChange",
 )
-SECTPR_PGBORDERS_SUCC = (
-    "w:lnNumType", "w:pgNumType", "w:cols", "w:formProt", "w:vAlign", "w:noEndnote",
-    "w:titlePg", "w:textDirection", "w:bidi", "w:rtlGutter", "w:docGrid",
-    "w:printerSettings", "w:sectPrChange",
-)
 
 
 def rtl_paragraph(paragraph, align="right"):
@@ -314,7 +404,7 @@ def rtl_paragraph(paragraph, align="right"):
     return paragraph
 
 
-def style_run(run, size=10, bold=False, italic=False, color=DARK_TEXT, font=FONT):
+def style_run(run, size=10, bold=False, italic=False, color="203864", font=FONT):
     run.font.size = Pt(size)
     run.font.bold = bold
     run.font.italic = italic
@@ -379,11 +469,11 @@ def shade_cell(cell, fill):
     return cell
 
 
-def set_cell_margins(cell, top=60, bottom=60, left=100, right=100):
+def set_cell_margins(cell, top=40, bottom=40, left=80, right=80):
     tcPr = cell._tc.get_or_add_tcPr()
     tcMar = OxmlElement("w:tcMar")
     for tag, val in (("top", top), ("left", left), ("bottom", bottom), ("right", right)):
-        node = OxmlElement(f"w:{tag}")
+        node = OxmlElement("w:" + tag)
         node.set(qn("w:w"), str(val))
         node.set(qn("w:type"), "dxa")
         tcMar.append(node)
@@ -399,24 +489,46 @@ def table_bidi(table):
     return table
 
 
-def set_table_borders(table, color=PRIMARY, size=6, inside_color=None):
+def set_table_borders(table, color="B7C9DA", size=4, inside_color=None, none=False):
     tblPr = table._tbl.tblPr
     borders = OxmlElement("w:tblBorders")
     inside_color = inside_color or color
     for edge, col in (("top", color), ("left", color), ("bottom", color),
                       ("right", color), ("insideH", inside_color), ("insideV", inside_color)):
-        el = OxmlElement(f"w:{edge}")
-        el.set(qn("w:val"), "single")
-        el.set(qn("w:sz"), str(size))
-        el.set(qn("w:space"), "0")
-        el.set(qn("w:color"), col)
+        el = OxmlElement("w:" + edge)
+        if none:
+            el.set(qn("w:val"), "none")
+            el.set(qn("w:sz"), "0")
+            el.set(qn("w:color"), "auto")
+        else:
+            el.set(qn("w:val"), "single")
+            el.set(qn("w:sz"), str(size))
+            el.set(qn("w:space"), "0")
+            el.set(qn("w:color"), col)
         borders.append(el)
     _insert_before(tblPr, borders, "w:shd", "w:tblLayout", "w:tblCellMar",
                    "w:tblLook", "w:tblCaption", "w:tblDescription", "w:tblPrChange")
     return table
 
 
-def paragraph_spacing(paragraph, before=0, after=3, line=1.05):
+def set_cell_borders(cell, edges):
+    """edges: dict like {'bottom': ('single', 24, '6AA84F')}"""
+    tcPr = cell._tc.get_or_add_tcPr()
+    tcBorders = OxmlElement("w:tcBorders")
+    for edge, spec in edges.items():
+        val, sz, color = spec
+        el = OxmlElement("w:" + edge)
+        el.set(qn("w:val"), val)
+        el.set(qn("w:sz"), str(sz))
+        el.set(qn("w:space"), "0")
+        el.set(qn("w:color"), color)
+        tcBorders.append(el)
+    _insert_before(tcPr, tcBorders, "w:shd", "w:noWrap", "w:tcMar",
+                   "w:textDirection", "w:tcFitText", "w:vAlign", "w:hideMark", "w:headers")
+    return cell
+
+
+def paragraph_spacing(paragraph, before=0, after=2, line=1.05):
     pf = paragraph.paragraph_format
     pf.space_before = Pt(before)
     pf.space_after = Pt(after)
@@ -424,173 +536,336 @@ def paragraph_spacing(paragraph, before=0, after=3, line=1.05):
     return paragraph
 
 
-def add_page_border(section, color=PRIMARY):
-    sectPr = section._sectPr
-    pgBorders = OxmlElement("w:pgBorders")
-    pgBorders.set(qn("w:offsetFrom"), "page")
-    for edge in ("top", "left", "bottom", "right"):
-        el = OxmlElement(f"w:{edge}")
-        el.set(qn("w:val"), "single")
-        el.set(qn("w:sz"), "8")
-        el.set(qn("w:space"), "20")
-        el.set(qn("w:color"), color)
-        pgBorders.append(el)
-    _insert_before(sectPr, pgBorders, *SECTPR_PGBORDERS_SUCC)
+def add_picture_to_paragraph(paragraph, path, width_cm):
+    run = paragraph.add_run()
+    run.add_picture(path, width=Cm(width_cm))
+    return run
 
 
-# ============================ عناصر التصميم ============================
+# ============================ الترويسة والتذييل ============================
 
-def add_header(doc, title):
-    table = doc.add_table(rows=1, cols=1)
-    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+H_GREEN = "6AA84F"
+H_NAVY = "1F4E79"
+H_DARK = "203864"
+H_GRAY = "595959"
+C_LABEL = "DCE6F1"
+C_BOX = "F2F7EC"
+
+
+def build_letterhead(header):
+    """ترويسة الصفحة: وزارة التعليم | مدارس أجيال | التنمية المتكاملة + خط الزخرفة."""
+    table = header.add_table(rows=1, cols=3, width=Cm(18))
     table_bidi(table)
-    set_table_borders(table, color=PRIMARY, size=2)
-    cell = table.cell(0, 0)
-    shade_cell(cell, PRIMARY)
-    set_cell_margins(cell, top=120, bottom=120, left=160, right=160)
+    set_table_borders(table, none=True)
+    table.columns[0].width = Cm(7.0)
+    table.columns[1].width = Cm(6.0)
+    table.columns[2].width = Cm(5.0)
 
+    # العمود الأيمن: كتلة المملكة
+    cell = table.cell(0, 0)
+    set_cell_margins(cell, 0, 0, 0, 0)
+    inner = cell.add_table(rows=1, cols=2)
+    inner.columns[0].width = Cm(5.1)
+    inner.columns[1].width = Cm(1.7)
+    table_bidi(inner)
+    set_table_borders(inner, none=True)
+    tcell, mcell = inner.cell(0, 0), inner.cell(0, 1)
+    set_cell_margins(tcell, 0, 0, 0, 0)
+    set_cell_margins(mcell, 0, 0, 0, 0)
+    p = tcell.paragraphs[0]
+    rtl_paragraph(p, "right")
+    paragraph_spacing(p, after=0, line=1.0)
+    style_run(p.add_run("المملكة العربية السعودية"), size=10, bold=True, color="2E7D32")
+    for line, sz in (("وزارة التعليم", 8.5), ("الإدارة العامة للتعليم", 7.5),
+                     ("مكتب التعليم", 7.5)):
+        p2 = tcell.add_paragraph()
+        rtl_paragraph(p2, "right")
+        paragraph_spacing(p2, after=0, line=1.0)
+        style_run(p2.add_run(line), size=sz, bold=(sz == 8.5), color=H_DARK)
+    pm = mcell.paragraphs[0]
+    rtl_paragraph(pm, "center")
+    paragraph_spacing(pm, after=0)
+    add_picture_to_paragraph(pm, os.path.join(ASSETS, "mark_ksa.png"), 1.5)
+
+    # العمود الأوسط: مدارس أجيال
+    cell = table.cell(0, 1)
+    set_cell_margins(cell, 0, 0, 0, 0)
+    inner = cell.add_table(rows=1, cols=2)
+    inner.columns[0].width = Cm(4.0)
+    inner.columns[1].width = Cm(1.8)
+    table_bidi(inner)
+    set_table_borders(inner, none=True)
+    tcell, mcell = inner.cell(0, 0), inner.cell(0, 1)
+    set_cell_margins(tcell, 0, 0, 0, 0)
+    set_cell_margins(mcell, 0, 0, 0, 0)
+    p = tcell.paragraphs[0]
+    rtl_paragraph(p, "right")
+    paragraph_spacing(p, after=0, line=1.15)
+    style_run(p.add_run("مـدارس أجـيال للبنـات المـتـميزة"), size=11, bold=True, color=H_NAVY)
+    pm = mcell.paragraphs[0]
+    rtl_paragraph(pm, "center")
+    paragraph_spacing(pm, after=0)
+    add_picture_to_paragraph(pm, os.path.join(ASSETS, "mark_ajyal.png"), 1.6)
+
+    # العمود الأيسر: التنمية المتكاملة
+    cell = table.cell(0, 2)
+    set_cell_margins(cell, 0, 0, 0, 0)
+    p = cell.paragraphs[0]
+    rtl_paragraph(p, "center")
+    paragraph_spacing(p, after=0)
+    add_picture_to_paragraph(p, os.path.join(ASSETS, "mark_dev.png"), 1.1)
+    p2 = cell.add_paragraph()
+    rtl_paragraph(p2, "center")
+    paragraph_spacing(p2, after=0, line=1.0)
+    style_run(p2.add_run("التنمية المتكاملة"), size=9, bold=True, color=H_NAVY)
+    p3 = cell.add_paragraph()
+    rtl_paragraph(p3, "center")
+    paragraph_spacing(p3, after=0, line=1.0)
+    style_run(p3.add_run("Integrated Developments"), size=6.5, color=H_GRAY)
+
+    # خط الزخرفة: رفيع + أخضر عريض + رفيع
+    line = header.add_table(rows=1, cols=3, width=Cm(18))
+    table_bidi(line)
+    set_table_borders(line, none=True)
+    widths = (3.5, 10.0, 4.5)
+    for i, w in enumerate(widths):
+        line.columns[i].width = Cm(w)
+    specs = (
+        {"bottom": ("single", 6, "A6A6A6")},
+        {"bottom": ("single", 36, H_GREEN)},
+        {"bottom": ("single", 6, H_NAVY)},
+    )
+    for i, spec in enumerate(specs):
+        c = line.cell(0, i)
+        set_cell_margins(c, 0, 0, 0, 0)
+        set_cell_borders(c, spec)
+        pr = c.paragraphs[0]
+        paragraph_spacing(pr, after=0, line=0.7)
+        style_run(pr.add_run(""), size=2)
+
+
+def build_footer_strip(footer):
+    """تذييل الصفحة: شهادات ISO/AiAA | شعار وأيقونات | تواصل اجتماعي + شريط سفلي."""
+    table = footer.add_table(rows=1, cols=3, width=Cm(18))
+    table_bidi(table)
+    set_table_borders(table, none=True)
+    table.columns[0].width = Cm(5.6)
+    table.columns[1].width = Cm(7.0)
+    table.columns[2].width = Cm(5.4)
+
+    # يمين: ISO + AiAA
+    cell = table.cell(0, 0)
+    set_cell_margins(cell, 0, 0, 0, 0)
+    inner = cell.add_table(rows=1, cols=2)
+    inner.columns[0].width = Cm(2.7)
+    inner.columns[1].width = Cm(2.7)
+    table_bidi(inner)
+    set_table_borders(inner, none=True)
+    for idx, spec in enumerate((
+        ("ISO 9001:2015", "CERTIFIED", "A60000"),
+        ("AiAA", "اعتماد دولي", H_NAVY),
+    )):
+        bc = inner.cell(0, idx)
+        set_cell_margins(bc, 20, 20, 40, 40)
+        set_cell_borders(bc, {
+            "top": ("single", 4, "BFBFBF"), "left": ("single", 4, "BFBFBF"),
+            "bottom": ("single", 4, "BFBFBF"), "right": ("single", 4, "BFBFBF")})
+        p = bc.paragraphs[0]
+        rtl_paragraph(p, "center")
+        paragraph_spacing(p, after=0, line=1.0)
+        style_run(p.add_run(spec[0]), size=7, bold=True, color=spec[2])
+        p2 = bc.add_paragraph()
+        rtl_paragraph(p2, "center")
+        paragraph_spacing(p2, after=0, line=1.0)
+        style_run(p2.add_run(spec[1]), size=5.5, color=H_GRAY)
+
+    # وسط: الشعار والأيقونات
+    cell = table.cell(0, 1)
+    set_cell_margins(cell, 0, 0, 0, 0)
+    p = cell.paragraphs[0]
+    rtl_paragraph(p, "center")
+    paragraph_spacing(p, after=1, line=1.0)
+    style_run(p.add_run("التعليم المتقـدم يبنـي ..."), size=8.5, bold=True, color=H_NAVY)
+    icons = cell.add_table(rows=1, cols=3)
+    icons.columns[0].width = Cm(2.2)
+    icons.columns[1].width = Cm(2.2)
+    icons.columns[2].width = Cm(2.2)
+    table_bidi(icons)
+    set_table_borders(icons, none=True)
+    for i, (img, label) in enumerate((
+        ("icon_person.png", "المعرفة"), ("icon_chart.png", "التكنولوجيا"), ("icon_atom.png", "العلوم"),
+    )):
+        ic = icons.cell(0, i)
+        set_cell_margins(ic, 0, 0, 0, 0)
+        pi = ic.paragraphs[0]
+        rtl_paragraph(pi, "center")
+        paragraph_spacing(pi, after=0, line=1.0)
+        add_picture_to_paragraph(pi, os.path.join(ASSETS, img), 0.55)
+        pl = ic.add_paragraph()
+        rtl_paragraph(pl, "center")
+        paragraph_spacing(pl, after=0, line=1.0)
+        style_run(pl.add_run(label), size=5.5, color=H_GRAY)
+
+    # يسار: التواصل الاجتماعي
+    cell = table.cell(0, 2)
+    set_cell_margins(cell, 0, 0, 0, 0)
+    p = cell.paragraphs[0]
+    rtl_paragraph(p, "center")
+    paragraph_spacing(p, after=0, line=1.1)
+    style_run(p.add_run("f   X   ◎   "), size=8, bold=True, color=H_NAVY)
+    style_run(p.add_run("Ajailyanbu"), size=8, bold=True, color=H_NAVY)
+    p2 = cell.add_paragraph()
+    rtl_paragraph(p2, "center")
+    paragraph_spacing(p2, after=0, line=1.1)
+    style_run(p2.add_run("☎   "), size=8, bold=True, color=H_GREEN)
+    style_run(p2.add_run("Nabualmarifa.edu.sa"), size=8, color=H_NAVY)
+
+    # الشريط السفلي: أخضر عريض يسار + خط أزرق رفيع
+    bars = footer.add_table(rows=1, cols=2, width=Cm(18))
+    table_bidi(bars)
+    set_table_borders(bars, none=True)
+    bars.columns[0].width = Cm(11.5)
+    bars.columns[1].width = Cm(6.5)
+    c0, c1 = bars.cell(0, 0), bars.cell(0, 1)
+    set_cell_margins(c0, 0, 0, 0, 0)
+    set_cell_margins(c1, 0, 0, 0, 0)
+    set_cell_borders(c0, {"bottom": ("single", 6, H_NAVY)})
+    set_cell_borders(c1, {"bottom": ("single", 36, H_GREEN)})
+    for c in (c0, c1):
+        pr = c.paragraphs[0]
+        paragraph_spacing(pr, after=0, line=0.7)
+        style_run(pr.add_run(""), size=2)
+
+
+# ============================ عناصر المتن ============================
+
+def paragraph_spacing2(paragraph, before=0, after=3, line=1.05):
+    return paragraph_spacing(paragraph, before, after, line)
+
+
+def add_title_bar(doc, title):
+    table = doc.add_table(rows=1, cols=1)
+    table_bidi(table)
+    set_table_borders(table, none=True)
+    cell = table.cell(0, 0)
+    shade_cell(cell, H_NAVY)
+    set_cell_margins(cell, 90, 90, 140, 140)
     p = cell.paragraphs[0]
     rtl_paragraph(p, "right")
-    paragraph_spacing(p, after=1)
-    style_run(p.add_run(KICKER), size=9.5, bold=False, color="C9DDE2")
-
-    p2 = cell.add_paragraph()
-    rtl_paragraph(p2, "right")
-    paragraph_spacing(p2, before=1, after=0, line=1.0)
-    style_run(p2.add_run(title), size=14, bold=True, color=WHITE)
+    paragraph_spacing(p, after=0, line=1.1)
+    style_run(p.add_run(title), size=12, bold=True, color="FFFFFF")
     return table
 
 
 def add_meta(doc):
-    spacer = doc.add_paragraph()
-    paragraph_spacing(spacer, after=0, before=2)
-    spacer_run = spacer.add_run("")
-    style_run(spacer_run, size=4)
-
     table = doc.add_table(rows=len(META), cols=2)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table_bidi(table)
-    set_table_borders(table, color=PRIMARY, size=4, inside_color="9FB8BF")
+    set_table_borders(table, color="B7C9DA", size=4, inside_color="B7C9DA")
     for i, (label, value) in enumerate(META):
         row = table.rows[i]
         label_cell, value_cell = row.cells[0], row.cells[1]
-        shade_cell(label_cell, PRIMARY_LIGHT)
-        set_cell_margins(label_cell, top=50, bottom=50, left=100, right=100)
-        set_cell_margins(value_cell, top=50, bottom=50, left=100, right=100)
-
+        label_cell.width = Cm(3.2)
+        value_cell.width = Cm(14.8)
+        shade_cell(label_cell, C_LABEL)
+        set_cell_margins(label_cell, 30, 30, 80, 80)
+        set_cell_margins(value_cell, 30, 30, 80, 80)
         p = label_cell.paragraphs[0]
         rtl_paragraph(p, "right")
         paragraph_spacing(p, after=0)
-        style_run(p.add_run(label), size=9.5, bold=True, color=PRIMARY)
-
+        style_run(p.add_run(label), size=9, bold=True, color=H_NAVY)
         p2 = value_cell.paragraphs[0]
         rtl_paragraph(p2, "right")
         paragraph_spacing(p2, after=0)
-        style_run(p2.add_run(value), size=10, bold=(i == 2), color=DARK_TEXT)
+        style_run(p2.add_run(value), size=9.5, bold=(i == 2), color=H_DARK)
     return table
 
 
 def add_section_heading(doc, text):
     p = doc.add_paragraph()
     rtl_paragraph(p, "right")
-    paragraph_spacing(p, before=8, after=4)
-    shade_paragraph(p, PRIMARY)
+    paragraph_spacing(p, before=5, after=3)
+    shade_paragraph(p, H_GREEN)
     pf = p.paragraph_format
-    pf.left_indent = Cm(0.15)
-    pf.right_indent = Cm(0.15)
-    style_run(p.add_run(f"  {text}"), size=11, bold=True, color=WHITE)
+    pf.left_indent = Cm(0.12)
+    pf.right_indent = Cm(0.12)
+    style_run(p.add_run("  " + text), size=10.5, bold=True, color="FFFFFF")
     return p
 
 
 def add_bullet(doc, marker, lead, text):
     p = doc.add_paragraph()
     rtl_paragraph(p, "right")
-    paragraph_spacing(p, after=3, line=1.15)
+    paragraph_spacing(p, after=2, line=1.12)
     pf = p.paragraph_format
     pf.right_indent = Cm(0.35)
     pf.first_line_indent = Cm(-0.35)
-    style_run(p.add_run(f"{marker} "), size=10.5, bold=True, color=ACCENT)
-    style_run(p.add_run(f"{lead}: "), size=10.5, bold=True, color=PRIMARY)
-    style_run(p.add_run(text), size=10.5, color=DARK_TEXT)
+    style_run(p.add_run(marker + " "), size=10, bold=True, color=H_GREEN)
+    style_run(p.add_run(lead + ": "), size=10, bold=True, color=H_NAVY)
+    style_run(p.add_run(text), size=10, color=H_DARK)
     return p
 
 
 def add_step(doc, idx, text):
     p = doc.add_paragraph()
     rtl_paragraph(p, "right")
-    paragraph_spacing(p, after=3, line=1.15)
+    paragraph_spacing(p, after=2, line=1.12)
     pf = p.paragraph_format
     pf.right_indent = Cm(0.5)
     pf.first_line_indent = Cm(-0.5)
-    style_run(p.add_run(f"{idx} - "), size=10.5, bold=True, color=ACCENT)
-    style_run(p.add_run(text), size=10.5, color=DARK_TEXT)
+    style_run(p.add_run(str(idx) + " - "), size=10, bold=True, color=H_GREEN)
+    style_run(p.add_run(text), size=10, color=H_DARK)
     return p
 
 
-def add_box(doc, lines):
+def add_box(doc, lines, fill=C_BOX, border=H_GREEN):
     table = doc.add_table(rows=1, cols=1)
-    table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table_bidi(table)
-    set_table_borders(table, color=ACCENT, size=4)
+    set_table_borders(table, color=border, size=4)
     cell = table.cell(0, 0)
-    shade_cell(cell, BOX_BG)
-    set_cell_margins(cell, top=70, bottom=70, left=120, right=120)
+    shade_cell(cell, fill)
+    set_cell_margins(cell, 50, 50, 100, 100)
     first = True
     for text, size, bold, color in lines:
         p = cell.paragraphs[0] if first else cell.add_paragraph()
         first = False
         rtl_paragraph(p, "right")
-        paragraph_spacing(p, after=2, line=1.1)
+        paragraph_spacing(p, after=1, line=1.1)
         style_run(p.add_run(text), size=size, bold=bold, color=color)
     return table
 
 
-def add_field(paragraph, instr, placeholder="1", size=8):
-    """إضافة حقل Word تلقائي (مثل رقم الصفحة)."""
-    fld = OxmlElement("w:fldSimple")
-    fld.set(qn("w:instr"), instr)
-    r = OxmlElement("w:r")
-    rPr = OxmlElement("w:rPr")
-    rFonts = OxmlElement("w:rFonts")
-    rFonts.set(qn("w:ascii"), FONT)
-    rFonts.set(qn("w:hAnsi"), FONT)
-    rFonts.set(qn("w:cs"), FONT)
-    sz = OxmlElement("w:sz"); sz.set(qn("w:val"), str(int(size * 2)))
-    szCs = OxmlElement("w:szCs"); szCs.set(qn("w:val"), str(int(size * 2)))
-    color = OxmlElement("w:color"); color.set(qn("w:val"), "6B7B80")
-    rPr.append(rFonts); rPr.append(sz); rPr.append(szCs); rPr.append(color)
-    t = OxmlElement("w:t"); t.text = placeholder
-    r.append(rPr); r.append(t)
-    fld.append(r)
-    paragraph._p.append(fld)
+def page_break(doc):
+    p = doc.add_paragraph()
+    run = p.add_run()
+    run.add_break(WD_BREAK.PAGE)
+    return p
 
 
-def add_footer(section, text, with_pages=False):
-    footer = section.footer
-    p = footer.paragraphs[0]
-    rtl_paragraph(p, "center")
-    paragraph_spacing(p, before=2, after=0)
-    style_run(p.add_run(text), size=8, color="6B7B80")
-    if with_pages:
-        style_run(p.add_run("  |  صفحة "), size=8, color="6B7B80")
-        add_field(p, " PAGE ")
-        style_run(p.add_run(" من "), size=8, color="6B7B80")
-        add_field(p, " NUMPAGES ", placeholder="9")
+def add_index_item(doc, num, title):
+    p = doc.add_paragraph()
+    rtl_paragraph(p, "right")
+    paragraph_spacing(p, after=3, line=1.12)
+    pf = p.paragraph_format
+    pf.right_indent = Cm(0.7)
+    pf.first_line_indent = Cm(-0.7)
+    style_run(p.add_run("الإضاءة " + str(num) + " "), size=10.5, bold=True, color=H_GREEN)
+    style_run(p.add_run("— " + title), size=10.5, color=H_DARK)
+    return p
 
 
 # ============================ بناء الوثيقة ============================
 
 def setup_document(doc):
-    """إعداد الصفحة والنمط الافتراضي."""
     section = doc.sections[0]
     section.page_width = Cm(21.0)
     section.page_height = Cm(29.7)
-    section.top_margin = Cm(1.1)
-    section.bottom_margin = Cm(1.1)
-    section.left_margin = Cm(1.25)
-    section.right_margin = Cm(1.25)
-    section.footer_distance = Cm(0.5)
-    add_page_border(section)
+    section.top_margin = Cm(3.55)
+    section.bottom_margin = Cm(3.15)
+    section.left_margin = Cm(1.5)
+    section.right_margin = Cm(1.5)
+    section.header_distance = Cm(0.7)
+    section.footer_distance = Cm(0.6)
 
     normal = doc.styles["Normal"]
     normal.font.name = FONT
@@ -603,19 +878,21 @@ def setup_document(doc):
     rFonts.set(qn("w:ascii"), FONT)
     rFonts.set(qn("w:hAnsi"), FONT)
     rFonts.set(qn("w:cs"), FONT)
+
+    build_letterhead(section.header)
+    build_footer_strip(section.footer)
     return section
 
 
 def populate_content(doc, doc_data):
-    """محتوى صفحة الإضاءة الواحدة."""
-    add_header(doc, doc_data["title"])
+    add_title_bar(doc, doc_data["title"])
     add_meta(doc)
 
     add_section_heading(doc, "أولًا: الفكرة المحورية")
     p = doc.add_paragraph()
     rtl_paragraph(p, "right")
-    paragraph_spacing(p, after=4, line=1.2)
-    style_run(p.add_run(doc_data["idea"]), size=11, color=DARK_TEXT)
+    paragraph_spacing(p, after=3, line=1.15)
+    style_run(p.add_run(doc_data["idea"]), size=10.5, color=H_DARK)
 
     add_section_heading(doc, "ثانيًا: إثراء أدوار المرشد الطلابي")
     for lead, text in doc_data["roles"]:
@@ -630,14 +907,12 @@ def populate_content(doc, doc_data):
         add_bullet(doc, "✓", "مؤشر", text)
 
     add_section_heading(doc, "خامسًا: سيناريو تطبيقي للمرشد الطلابي")
-    add_box(doc, [
-        (doc_data["scenario"], 9.5, False, DARK_TEXT),
-    ])
+    add_box(doc, [(doc_data["scenario"], 9.5, False, H_DARK)])
 
     add_box(doc, [
-        (TOOLS_LINE, 9, True, PRIMARY),
-        (PRACTICE_LINE, 9, False, DARK_TEXT),
-    ])
+        (TOOLS_LINE, 8.5, True, H_NAVY),
+        (PRACTICE_LINE, 8.5, False, H_DARK),
+    ], fill="EDF3F8", border=H_NAVY)
 
 
 def set_props(doc, title):
@@ -648,60 +923,34 @@ def set_props(doc, title):
     props.comments = "المؤشر: يلتزم المتعلمون بقواعد السلوك والانضباط المدرسي"
 
 
-def page_break(doc):
-    p = doc.add_paragraph()
-    run = p.add_run()
-    run.add_break(WD_BREAK.PAGE)
-    return p
-
-
-def add_index_item(doc, num, title):
-    p = doc.add_paragraph()
-    rtl_paragraph(p, "right")
-    paragraph_spacing(p, after=3, line=1.15)
-    pf = p.paragraph_format
-    pf.right_indent = Cm(0.7)
-    pf.first_line_indent = Cm(-0.7)
-    style_run(p.add_run(f"الإضاءة {num} "), size=10.5, bold=True, color=ACCENT)
-    style_run(p.add_run(f"— {title}"), size=10.5, color=DARK_TEXT)
-    return p
-
-
 def build(doc_data, idx):
-    """وثيقة مستقلة بصفحة واحدة لكل إضاءة."""
     doc = Document()
-    section = setup_document(doc)
+    setup_document(doc)
     populate_content(doc, doc_data)
-    add_footer(section, f"إعداد: المرشد الطلابي — وثيقة العمل الإرشادي | الإضاءة {idx} من 8 | العام الدراسي 2026م")
     set_props(doc, doc_data["title"])
     return doc
 
 
 def build_cover(doc):
-    """صفحة الغلاف والفهرس للوثيقة الموحدة."""
-    add_header(doc, "الالتزام بقواعد السلوك والانضباط المدرسي — الإضاءات الثمانية")
+    add_title_bar(doc, "الالتزام بقواعد السلوك والانضباط المدرسي — الإضاءات الثمانية")
     add_meta(doc)
 
     add_section_heading(doc, "عن هذه الوثيقة")
     p = doc.add_paragraph()
     rtl_paragraph(p, "right")
-    paragraph_spacing(p, after=4, line=1.2)
-    style_run(
-        p.add_run(
-            "دليل تطبيقي موحّد للمرشد الطلابي يجمع الإضاءات الثمانية للمؤشر "
-            "«يلتزم المتعلمون بقواعد السلوك والانضباط المدرسي»، مطوّرة وممتدّة إلى أدوار "
-            "وخطوات ومؤشرات نجاح وسيناريوهات تطبيقية، وفق متطلبات نموذج معايير التقويم "
-            "والاعتماد المدرسي للعام 2026م. كل إضاءة في صفحة مستقلة بعنوانها."
-        ),
-        size=11,
-        color=DARK_TEXT,
-    )
+    paragraph_spacing(p, after=3, line=1.18)
+    style_run(p.add_run(
+        "دليل تطبيقي موحّد للمرشد الطلابي يجمع الإضاءات الثمانية للمؤشر "
+        "«يلتزم المتعلمون بقواعد السلوك والانضباط المدرسي»، مطوّرة وممتدّة إلى أدوار "
+        "وخطوات ومؤشرات نجاح وسيناريوهات تطبيقية، وفق متطلبات نموذج معايير التقويم "
+        "والاعتماد المدرسي للعام 2026م. كل إضاءة في صفحة مستقلة بعنوانها."
+    ), size=10.5, color=H_DARK)
 
     add_box(doc, [
-        ("بيانات التوثيق (تُستكمل يدويًا):", 9, True, PRIMARY),
+        ("بيانات التوثيق (تُستكمل يدويًا):", 9, True, H_NAVY),
         ("المدرسة: ......................................    |    "
          "المرشد الطلابي: ......................................    |    "
-         "التاريخ: ......... / ......... / 1447هـ", 9.5, False, DARK_TEXT),
+         "التاريخ: ......... / ......... / 1447هـ", 9.5, False, H_DARK),
     ])
 
     add_section_heading(doc, "فهرس الإضاءات الثمانية")
@@ -710,16 +959,14 @@ def build_cover(doc):
         add_index_item(doc, i, title)
 
     add_box(doc, [
-        (TOOLS_LINE, 9, True, PRIMARY),
-        (PRACTICE_LINE, 9, False, DARK_TEXT),
-    ])
+        (TOOLS_LINE, 8.5, True, H_NAVY),
+        (PRACTICE_LINE, 8.5, False, H_DARK),
+    ], fill="EDF3F8", border=H_NAVY)
 
 
 def build_combined():
-    """الوثيقة الموحدة: غلاف + فهرس ثم الإضاءات الثمانية، كل إضاءة في صفحة."""
     doc = Document()
-    section = setup_document(doc)
-    add_footer(section, "إعداد: المرشد الطلابي — الوثيقة الموحدة للإضاءات الثمانية | العام الدراسي 2026م", with_pages=True)
+    setup_document(doc)
     build_cover(doc)
     for data in DOCS:
         page_break(doc)
@@ -729,19 +976,18 @@ def build_combined():
 
 
 def main():
-    import os
+    make_marks()
     out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs")
     os.makedirs(out_dir, exist_ok=True)
     for i, data in enumerate(DOCS, start=1):
         doc = build(data, i)
         path = os.path.join(out_dir, data["file"])
         doc.save(path)
-        print(f"[{i}/8] {path}")
-
+        print("[{}/8] {}".format(i, path))
     combined = build_combined()
     combined_path = os.path.join(out_dir, "00-الوثيقة-الموحدة-الإضاءات-الثمانية.docx")
     combined.save(combined_path)
-    print(f"[موحد] {combined_path}")
+    print("[موحد] " + combined_path)
 
 
 if __name__ == "__main__":
