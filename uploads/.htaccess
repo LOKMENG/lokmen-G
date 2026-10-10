@@ -1,0 +1,7 @@
+# منع تنفيذ أي سكربت داخل مجلد الملفات المرفوعة (حماية من رفع ملفات ضارة)
+php_flag engine off
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|phps|pl|py|jsp|asp|aspx|sh|cgi|htm|html|shtml)$">
+    Require all denied
+</FilesMatch>
+Options -Indexes
+AddType text/plain .php .phtml

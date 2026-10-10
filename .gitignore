@@ -1,0 +1,48 @@
+# ---------- أسرار وإعدادات محلية (لا ترفع أبداً) ----------
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# ---------- رفع المستخدمين ----------
+/uploads/*
+!/uploads/**/
+!/uploads/**/.gitkeep
+!/uploads/.htaccess
+
+# ---------- مخرجات الاستيراد (ملفات يولّدها المستورد للمالك) ----------
+/storage/import/*
+!/storage/import/.gitkeep
+
+# ---------- سجلات ومؤقتات ----------
+/storage/logs/*
+!/storage/logs/.gitkeep
+/storage/cache/*
+!/storage/cache/.gitkeep
+/storage/backups/*
+!/storage/backups/.gitkeep
+*.log
+
+# ---------- أدوات التطوير ----------
+node_modules/
+vendor/
+.venv/
+__pycache__/
+*.pyc
+.php-cs-fixer.cache
+/tests/tmp/
+/tools/preview/node_modules/
+/tools/preview/package-lock.json
+.DS_Store
+Thumbs.db
+
+# ---------- ملفات مؤقتة ومخرجات النشر ----------
+/install.lock
+/storage/installed.lock
+/storage/build/
+/docs/_build/
+*.zip
+
+# ---------- حزم النشر المبنية محلياً (لا تُرفع للمستودع) ----------
+/dist/

@@ -1,0 +1,78 @@
+# =====================================================================
+#  إعدادات Apache للمنصة (تعمل على XAMPP والاستضافة العادية)
+# =====================================================================
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # إجبار HTTPS (فعّلها على الاستضافة التي توفر شهادة SSL)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # روابط جميلة بدون .php  (/student/dashboard  →  student/dashboard.php)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^([A-Za-z0-9_/-]+)/?$ $1.php [L,QSA]
+
+    # منع الوصول المباشر للملفات الحساسة
+    RewriteRule ^(\.env|database\.sql|composer\.(json|lock))$ - [F,L]
+</IfModule>
+
+# حماية الملفات الحساسة
+<FilesMatch "^\.env|\.(sql|md|log|ini|yml|json|lock)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# السماح بالوصول لملفات الأصول العامة
+<FilesMatch "\.(css|js|woff2?|ttf|png|jpg|jpeg|gif|svg|webp|ico)$">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+</FilesMatch>
+
+# منع عرض محتوى المجلدات الحساسة
+RedirectMatch 404 /(config|src|views|includes|storage|database|tests|tools|docs)/
+
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 7 days"
+    ExpiresByType application/javascript "access plus 7 days"
+    ExpiresByType font/woff2 "access plus 30 days"
+    ExpiresByType image/svg+xml "access plus 30 days"
+</IfModule>
+
+# إعدادات PHP (تعمل فقط عند تشغيل PHP كوحدة Apache "mod_php").
+# على الاستضافات التي تستخدم PHP-FPM/CGI (وهي الأكثر شيوعاً اليوم) تُضبط هذه القيم
+# من لوحة الاستضافة أو من ملف php.ini أو من .user.ini، وإلا ظهر خطأ 500.
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 12M
+    php_value max_execution_time 120
+</IfModule>
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 12M
+    php_value max_execution_time 120
+</IfModule>
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 12M
+    php_value max_execution_time 120
+</IfModule>
