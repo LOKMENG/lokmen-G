@@ -1,0 +1,619 @@
+@charset "UTF-8";
+/* =====================================================================
+   طبقة «Neon Carbon — الأخضر»
+   ─────────────────────────────────────────────────────────────────────
+   هوية بصرية داكنة بلمسة نيون خضراء، مبنية على قالب Tooplate 2165
+   Neon Carbon، ومُهيَّأة بالكامل للعربية و RTL:
+     • كل الاتجاهات بخصائص منطقية (inline-start/end) لا left/right
+     • لا إعادة تعيين (reset) عامة: الطبقة تُركَّب فوق Bootstrap و app.css
+     • وظائف الاختبارات محفوظة: حالات الاختيار/الصحيح/الخطأ والمؤقّت
+       والملاحِق كلها مُعاد تلوينها بتباين كافٍ للقراءة
+     • محتوى الصفحة يبقى ظاهراً بدون جافاسكربت
+   القالب مجاني بشروط: يلزم بقاء رابط النسبة إلى Tooplate في التذييل.
+   ===================================================================== */
+
+/* ═══════════════════════════════════════════════════════════════════
+   1) الرموز (Tokens)
+   ═══════════════════════════════════════════════════════════════════ */
+body.theme-neon-carbon {
+  /* أسطح الكربون */
+  --nc-carbon:          #07090A;
+  --nc-carbon-up:       #0E1012;
+  --nc-panel:           #0C0E10;
+  --nc-panel-2:         #101316;
+  --nc-line:            #1B1F24;
+  --nc-line-bright:     #262C33;
+
+  /* النيون */
+  --nc-green:           #00FF6A;
+  --nc-green-soft:      #7DFFB0;
+  --nc-green-dim:       rgba(0, 255, 106, .14);
+  --nc-green-ghost:     rgba(0, 255, 106, .05);
+  --nc-green-glow:      rgba(0, 255, 106, .35);
+  --nc-cyan:            #00F0FF;
+  --nc-cyan-dim:        rgba(0, 240, 255, .12);
+  --nc-amber:           #FFB300;
+  --nc-red:             #FF3B4E;
+
+  /* نصوص */
+  --nc-text:            #E9F3EC;
+  --nc-text-dim:        #9DB0A5;
+
+  /* عناصر مشتركة */
+  --nc-radius:          14px;
+  --nc-radius-sm:       10px;
+  --nc-bracket:         14px;
+  --nc-bracket-w:       1px;
+  --nc-mono:            'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* ═══ ربط هوية المنصة بهوية نيون كاربون ═══ */
+  --pl-primary:         var(--nc-green);
+  --pl-primary-dark:    #00C251;
+  --pl-primary-light:   rgba(0, 255, 106, .10);
+  --pl-accent:          var(--nc-cyan);
+  --pl-accent-light:    rgba(0, 240, 255, .10);
+  --pl-ink:             var(--nc-text);
+  --pl-muted:           var(--nc-text-dim);
+  --pl-border:          var(--nc-line);
+  --pl-surface:         var(--nc-panel);
+  --pl-body-bg:         var(--nc-carbon);
+  --pl-sidebar-bg:      #050706;
+  --pl-sidebar-ink:     #CFE6D8;
+  --pl-sidebar-active:  rgba(0, 255, 106, .12);
+  --pl-shadow:          0 4px 22px rgba(0, 0, 0, .45);
+  --pl-shadow-lg:       0 14px 44px rgba(0, 0, 0, .55);
+  --pl-radius:          var(--nc-radius);
+  --pl-radius-sm:       var(--nc-radius-sm);
+
+  /* توافق Bootstrap الداكن */
+  --bs-body-bg:              var(--nc-carbon);
+  --bs-body-color:           var(--nc-text);
+  --bs-primary:              var(--nc-green);
+  --bs-primary-rgb:          0, 255, 106;
+  --bs-link-color:           var(--nc-green-soft);
+  --bs-link-hover-color:     var(--nc-green);
+  --bs-border-color:         var(--nc-line);
+  --bs-secondary-bg:         var(--nc-panel-2);
+  --bs-tertiary-bg:          var(--nc-panel);
+  --bs-emphasis-color:       #FFFFFF;
+  --bs-heading-color:        #FFFFFF;
+  --bs-body-font-family:     'Cairo', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+
+  background-color: var(--nc-carbon);
+  color: var(--nc-text);
+  line-height: 1.8;
+}
+
+/* خلفية شبكية + توهّج خفيف (لا تعيق النقر) */
+body.theme-neon-carbon::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 520px at 85% -12%, rgba(0, 255, 106, .10), transparent 62%),
+    radial-gradient(900px 460px at 5% 8%, rgba(0, 240, 255, .06), transparent 60%),
+    linear-gradient(0deg, transparent, transparent 39px, rgba(0, 255, 106, .030) 39px, rgba(0, 255, 106, .030) 40px),
+    linear-gradient(90deg, transparent, transparent 39px, rgba(0, 255, 106, .030) 39px, rgba(0, 255, 106, .030) 40px);
+  background-size: auto, auto, 100% 40px, 40px 100%;
+}
+body.theme-neon-carbon > * { position: relative; z-index: 1; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   2) الطباعة
+   ═══════════════════════════════════════════════════════════════════ */
+body.theme-neon-carbon h1,
+body.theme-neon-carbon h2,
+body.theme-neon-carbon h3,
+body.theme-neon-carbon h4,
+body.theme-neon-carbon h5,
+body.theme-neon-carbon h6 { color: #FFFFFF; letter-spacing: 0; }
+
+body.theme-neon-carbon a { color: var(--nc-green-soft); }
+body.theme-neon-carbon a:hover { color: var(--nc-green); }
+body.theme-neon-carbon .text-muted,
+body.theme-neon-carbon .text-body-secondary { color: var(--nc-text-dim) !important; }
+body.theme-neon-carbon hr { border-color: var(--nc-line); opacity: 1; }
+
+/* أرقام بخط ثابت العرض (المؤقّت، النتائج، الإحصاءات) */
+body.theme-neon-carbon .pl-timer,
+body.theme-neon-carbon .pl-stat .value,
+body.theme-neon-carbon .pl-price,
+body.theme-neon-carbon .pl-stat-pill .value,
+body.theme-neon-carbon .pl-nav-btn,
+body.theme-neon-carbon table td,
+body.theme-neon-carbon table th { font-variant-numeric: tabular-nums; }
+
+/* شريحة «تاغ» صغيرة بأسلوب القالب (عربي: بدون تحويل لحالة الأحرف) */
+body.theme-neon-carbon .nc-tag {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: .74rem; font-weight: 700; letter-spacing: .02em;
+  padding: .22rem .7rem; border-radius: 999px;
+  color: var(--nc-green-soft);
+  background: var(--nc-green-ghost);
+  border: 1px solid var(--nc-green-dim);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   3) الأسطح: بطاقات، جداول، نماذج
+   ═══════════════════════════════════════════════════════════════════ */
+body.theme-neon-carbon .card,
+body.theme-neon-carbon .pl-question-card,
+body.theme-neon-carbon .pl-exam-bar,
+body.theme-neon-carbon .pl-feature,
+body.theme-neon-carbon .pl-price-card,
+body.theme-neon-carbon .modal-content,
+body.theme-neon-carbon .offcanvas,
+body.theme-neon-carbon .list-group-item,
+body.theme-neon-carbon .accordion-item,
+body.theme-neon-carbon .dropdown-menu {
+  background-color: var(--nc-panel);
+  border: 1px solid var(--nc-line);
+  color: var(--nc-text);
+  box-shadow: 0 2px 18px rgba(0, 0, 0, .40);
+}
+body.theme-neon-carbon .card,
+body.theme-neon-carbon .pl-question-card,
+body.theme-neon-carbon .pl-feature,
+body.theme-neon-carbon .pl-price-card,
+body.theme-neon-carbon .modal-content {
+  position: relative;
+  border-radius: var(--nc-radius);
+}
+/* أقواس الزوايا: سمة القالب (متماثلة → آمنة في RTL) */
+body.theme-neon-carbon .card::before,
+body.theme-neon-carbon .pl-question-card::before,
+body.theme-neon-carbon .modal-content::before {
+  content: '';
+  position: absolute; inset: -1px;
+  pointer-events: none; z-index: 2; border-radius: inherit;
+  background:
+    linear-gradient(90deg, var(--nc-green) 0, var(--nc-green) var(--nc-bracket), transparent var(--nc-bracket)) no-repeat 0 0 / var(--nc-bracket) var(--nc-bracket-w),
+    linear-gradient(180deg, var(--nc-green) 0, var(--nc-green) var(--nc-bracket), transparent var(--nc-bracket)) no-repeat 0 0 / var(--nc-bracket-w) var(--nc-bracket),
+    linear-gradient(270deg, var(--nc-green) 0, var(--nc-green) var(--nc-bracket), transparent var(--nc-bracket)) no-repeat 100% 0 / var(--nc-bracket) var(--nc-bracket-w),
+    linear-gradient(180deg, var(--nc-green) 0, var(--nc-green) var(--nc-bracket), transparent var(--nc-bracket)) no-repeat 100% 0 / var(--nc-bracket-w) var(--nc-bracket);
+  opacity: .55;
+}
+body.theme-neon-carbon .card:hover,
+body.theme-neon-carbon .pl-question-card:hover { border-color: var(--nc-line-bright); }
+
+body.theme-neon-carbon .card-header,
+body.theme-neon-carbon .modal-header,
+body.theme-neon-carbon .modal-footer,
+body.theme-neon-carbon .card-footer {
+  background-color: rgba(255, 255, 255, .02);
+  border-color: var(--nc-line);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* جداول */
+body.theme-neon-carbon .table { color: var(--nc-text); border-color: var(--nc-line); }
+body.theme-neon-carbon .table > :not(caption) > * > * {
+  background-color: transparent;
+  border-bottom-color: var(--nc-line);
+  color: var(--nc-text);
+}
+body.theme-neon-carbon .table thead th {
+  color: var(--nc-green-soft);
+  background-color: rgba(0, 255, 106, .05);
+  border-bottom-color: var(--nc-green-dim);
+  font-size: .85rem;
+}
+body.theme-neon-carbon .table tbody tr:hover > * { background-color: var(--nc-green-ghost); }
+body.theme-neon-carbon .table-striped > tbody > tr:nth-of-type(odd) > * { background-color: rgba(255, 255, 255, .015); }
+
+/* نماذج */
+body.theme-neon-carbon .form-control,
+body.theme-neon-carbon .form-select,
+body.theme-neon-carbon .form-check-input {
+  background-color: var(--nc-carbon-up);
+  border: 1px solid var(--nc-line-bright);
+  color: var(--nc-text);
+}
+body.theme-neon-carbon .form-control::placeholder { color: #6F7F77; }
+body.theme-neon-carbon .form-control:focus,
+body.theme-neon-carbon .form-select:focus {
+  background-color: var(--nc-carbon-up);
+  border-color: var(--nc-green);
+  color: #fff;
+  box-shadow: 0 0 0 .18rem rgba(0, 255, 106, .18);
+}
+body.theme-neon-carbon .form-check-input:checked {
+  background-color: var(--nc-green);
+  border-color: var(--nc-green);
+}
+body.theme-neon-carbon .form-label,
+body.theme-neon-carbon .col-form-label { color: var(--nc-text); }
+body.theme-neon-carbon .input-group-text {
+  background-color: var(--nc-panel-2);
+  border-color: var(--nc-line-bright);
+  color: var(--nc-text-dim);
+}
+body.theme-neon-carbon .form-text { color: var(--nc-text-dim); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   4) الأزرار والشارات والتنبيهات
+   ═══════════════════════════════════════════════════════════════════ */
+body.theme-neon-carbon .btn-primary {
+  background-color: var(--nc-green);
+  border-color: var(--nc-green);
+  color: #04150B;
+  font-weight: 700;
+  box-shadow: 0 0 14px rgba(0, 255, 106, .28);
+}
+body.theme-neon-carbon .btn-primary:hover,
+body.theme-neon-carbon .btn-primary:focus {
+  background-color: #4CFF97;
+  border-color: #4CFF97;
+  color: #04150B;
+  box-shadow: 0 0 22px rgba(0, 255, 106, .45);
+}
+body.theme-neon-carbon .btn-outline-primary {
+  color: var(--nc-green-soft);
+  border-color: rgba(0, 255, 106, .45);
+  background-color: transparent;
+}
+body.theme-neon-carbon .btn-outline-primary:hover,
+body.theme-neon-carbon .btn-outline-primary:focus {
+  background-color: var(--nc-green-dim);
+  border-color: var(--nc-green);
+  color: var(--nc-green);
+}
+body.theme-neon-carbon .btn-outline-secondary,
+body.theme-neon-carbon .btn-secondary {
+  color: var(--nc-text);
+  border-color: var(--nc-line-bright);
+  background-color: var(--nc-panel-2);
+}
+body.theme-neon-carbon .btn-outline-secondary:hover,
+body.theme-neon-carbon .btn-secondary:hover {
+  background-color: var(--nc-line);
+  border-color: var(--nc-green);
+  color: var(--nc-green);
+}
+body.theme-neon-carbon .btn-gold {
+  background-color: var(--nc-cyan); border-color: var(--nc-cyan); color: #04150B;
+  box-shadow: 0 0 14px rgba(0, 240, 255, .28);
+}
+body.theme-neon-carbon .btn-gold:hover { background-color: #6BF6FF; border-color: #6BF6FF; color: #04150B; }
+body.theme-neon-carbon .btn-close { filter: invert(1) grayscale(1) brightness(1.6); }
+body.theme-neon-carbon .btn:disabled,
+body.theme-neon-carbon .btn.disabled { opacity: .5; box-shadow: none; }
+
+body.theme-neon-carbon .badge { border: 1px solid transparent; }
+body.theme-neon-carbon .badge.bg-success,
+body.theme-neon-carbon .badge.text-bg-success { background-color: rgba(0, 255, 106, .16) !important; color: var(--nc-green) !important; border-color: var(--nc-green-dim); }
+body.theme-neon-carbon .badge.bg-danger,
+body.theme-neon-carbon .badge.text-bg-danger { background-color: rgba(255, 59, 78, .16) !important; color: #FF8B96 !important; border-color: rgba(255, 59, 78, .32); }
+body.theme-neon-carbon .badge.bg-warning,
+body.theme-neon-carbon .badge.text-bg-warning { background-color: rgba(255, 179, 0, .16) !important; color: #FFD066 !important; border-color: rgba(255, 179, 0, .32); }
+body.theme-neon-carbon .badge.bg-primary,
+body.theme-neon-carbon .badge.text-bg-primary { background-color: rgba(0, 240, 255, .14) !important; color: var(--nc-cyan) !important; border-color: var(--nc-cyan-dim); }
+body.theme-neon-carbon .badge.bg-secondary,
+body.theme-neon-carbon .badge.text-bg-secondary { background-color: rgba(255, 255, 255, .08) !important; color: var(--nc-text-dim) !important; }
+
+body.theme-neon-carbon .alert {
+  background-color: var(--nc-panel-2);
+  border: 1px solid var(--nc-line-bright);
+  color: var(--nc-text);
+  border-inline-start: 3px solid var(--nc-green);
+}
+body.theme-neon-carbon .alert-success { border-inline-start-color: var(--nc-green); }
+body.theme-neon-carbon .alert-danger  { border-inline-start-color: var(--nc-red); }
+body.theme-neon-carbon .alert-warning { border-inline-start-color: var(--nc-amber); }
+body.theme-neon-carbon .alert-info    { border-inline-start-color: var(--nc-cyan); }
+
+body.theme-neon-carbon .progress,
+body.theme-neon-carbon .pl-progress-thin {
+  background-color: var(--nc-line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+body.theme-neon-carbon .progress-bar {
+  background-color: var(--nc-green);
+  box-shadow: 0 0 12px rgba(0, 255, 106, .45);
+}
+body.theme-neon-carbon .pagination .page-link {
+  background-color: var(--nc-panel);
+  border-color: var(--nc-line-bright);
+  color: var(--nc-text-dim);
+}
+body.theme-neon-carbon .pagination .page-item.active .page-link {
+  background-color: var(--nc-green); border-color: var(--nc-green); color: #04150B; font-weight: 700;
+}
+body.theme-neon-carbon .pagination .page-link:hover { color: var(--nc-green); border-color: var(--nc-green); }
+body.theme-neon-carbon .nav-tabs .nav-link { color: var(--nc-text-dim); border-color: transparent; }
+body.theme-neon-carbon .nav-tabs .nav-link.active {
+  color: var(--nc-green); background-color: transparent; border-color: var(--nc-line) var(--nc-line) var(--nc-green);
+}
+body.theme-neon-carbon .breadcrumb,
+body.theme-neon-carbon .breadcrumb-item,
+body.theme-neon-carbon .breadcrumb-item.active { color: var(--nc-text-dim); }
+body.theme-neon-carbon .breadcrumb-item a { color: var(--nc-green-soft); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   5) الشريط العلوي (الصفحات العامة) والتذييل
+   ═══════════════════════════════════════════════════════════════════ */
+body.theme-neon-carbon .pl-navbar {
+  background: rgba(7, 9, 10, .82) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--nc-line);
+  box-shadow: 0 1px 0 rgba(0, 255, 106, .18), 0 8px 30px rgba(0, 0, 0, .45);
+}
+body.theme-neon-carbon .pl-navbar .navbar-brand { color: #fff; }
+body.theme-neon-carbon .pl-navbar .nav-link { color: var(--nc-text-dim); }
+body.theme-neon-carbon .pl-navbar .nav-link:hover,
+body.theme-neon-carbon .pl-navbar .nav-link.active { color: var(--nc-green); }
+body.theme-neon-carbon .pl-navbar .navbar-toggler { border-color: var(--nc-line-bright); color: var(--nc-green); }
+body.theme-neon-carbon .pl-navbar .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280%2c255%2c106%2c0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+body.theme-neon-carbon .pl-logo {
+  background: var(--nc-green-ghost);
+  border: 1px solid var(--nc-green-dim);
+  color: var(--nc-green);
+  border-radius: 12px;
+  box-shadow: 0 0 16px rgba(0, 255, 106, .20) inset;
+}
+
+body.theme-neon-carbon .pl-footer {
+  background: #050706;
+  border-top: 1px solid var(--nc-line);
+  color: var(--nc-text-dim);
+}
+body.theme-neon-carbon .pl-footer a { color: var(--nc-green-soft); }
+body.theme-neon-carbon .pl-footer a:hover { color: var(--nc-green); }
+body.theme-neon-carbon .pl-footer h5,
+body.theme-neon-carbon .pl-footer h6,
+body.theme-neon-carbon .pl-footer .fw-bold { color: #fff; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   6) لوحة الطالب/الإدارة: الشريط الجانبي والمحتوى
+   ═══════════════════════════════════════════════════════════════════ */
+body.theme-neon-carbon .pl-sidebar {
+  background: var(--pl-sidebar-bg);
+  border-inline-end: 1px solid var(--nc-line);
+  color: var(--pl-sidebar-ink);
+}
+body.theme-neon-carbon .pl-sidebar-brand { color: var(--nc-green); }
+body.theme-neon-carbon .pl-sidebar-nav .nav-section {
+  color: #6F8478; font-size: .72rem; letter-spacing: .04em;
+}
+body.theme-neon-carbon .pl-sidebar-nav .nav-link {
+  color: var(--nc-text-dim);
+  border-inline-start: 2px solid transparent;
+}
+body.theme-neon-carbon .pl-sidebar-nav .nav-link:hover {
+  color: var(--nc-green);
+  background: var(--nc-green-ghost);
+}
+body.theme-neon-carbon .pl-sidebar-nav .nav-link.active {
+  color: var(--nc-green);
+  background: var(--pl-sidebar-active);
+  border-inline-start-color: var(--nc-green);
+  box-shadow: -1px 0 14px rgba(0, 255, 106, .18) inset;
+}
+body.theme-neon-carbon .pl-sidebar-footer { border-top: 1px solid var(--nc-line); color: var(--nc-text-dim); }
+body.theme-neon-carbon .pl-topbar {
+  background: rgba(7, 9, 10, .82);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--nc-line);
+  color: var(--nc-text);
+}
+body.theme-neon-carbon .pl-content { background: transparent; }
+body.theme-neon-carbon .pl-page-title { color: #fff; }
+body.theme-neon-carbon .pl-page-sub { color: var(--nc-text-dim); }
+
+/* بطاقات الإحصاءات */
+body.theme-neon-carbon .pl-stat {
+  background: var(--nc-panel);
+  border: 1px solid var(--nc-line);
+  border-radius: var(--nc-radius);
+  position: relative;
+  overflow: hidden;
+}
+body.theme-neon-carbon .pl-stat::after {
+  content: '';
+  position: absolute; inset-block: 0; inset-inline-start: 0;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, var(--nc-green), transparent);
+  opacity: .8;
+}
+body.theme-neon-carbon .pl-stat .value { color: var(--nc-green); font-weight: 800; }
+body.theme-neon-carbon .pl-stat .label { color: var(--nc-text-dim); }
+body.theme-neon-carbon .pl-stat-icon {
+  background: var(--nc-green-ghost);
+  border: 1px solid var(--nc-green-dim);
+  color: var(--nc-green);
+}
+body.theme-neon-carbon .pl-stat-icon.is-gold { background: rgba(0, 240, 255, .10); border-color: var(--nc-cyan-dim); color: var(--nc-cyan); }
+body.theme-neon-carbon .pl-stat-icon.is-teal { background: var(--nc-green-ghost); border-color: var(--nc-green-dim); color: var(--nc-green); }
+body.theme-neon-carbon .pl-stat-icon.is-blue { background: rgba(255, 179, 0, .10); border-color: rgba(255, 179, 0, .3); color: var(--nc-amber); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   7) واجهة الاختبار (محفوظة الوظائف، مُعاد تلوينها)
+   ═══════════════════════════════════════════════════════════════════ */
+body.theme-neon-carbon .pl-exam-bar {
+  background: rgba(10, 13, 14, .92);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--nc-line);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+body.theme-neon-carbon .pl-timer {
+  background: var(--nc-green-ghost);
+  border: 1px solid var(--nc-green-dim);
+  color: var(--nc-green);
+  font-family: var(--nc-mono);
+  letter-spacing: .02em;
+  box-shadow: 0 0 14px rgba(0, 255, 106, .18);
+}
+body.theme-neon-carbon .pl-timer.warning {
+  background: rgba(255, 179, 0, .14); border-color: rgba(255, 179, 0, .35); color: #FFD066;
+}
+body.theme-neon-carbon .pl-timer.danger {
+  background: rgba(255, 59, 78, .16); border-color: rgba(255, 59, 78, .4); color: #FF8B96;
+}
+
+body.theme-neon-carbon .pl-question-text { color: #fff; }
+
+body.theme-neon-carbon .pl-option {
+  background: var(--nc-carbon-up);
+  border: 1px solid var(--nc-line-bright);
+  border-radius: var(--nc-radius-sm);
+  color: var(--nc-text);
+  transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+}
+body.theme-neon-carbon .pl-option:hover {
+  border-color: var(--nc-green);
+  background: var(--nc-green-ghost);
+  box-shadow: 0 0 0 1px rgba(0, 255, 106, .18);
+}
+body.theme-neon-carbon .pl-option .pl-option-key {
+  background: var(--nc-panel-2);
+  border: 1px solid var(--nc-line-bright);
+  color: var(--nc-text-dim);
+  font-weight: 700;
+}
+body.theme-neon-carbon .pl-option.selected {
+  border-color: var(--nc-green);
+  background: var(--nc-green-dim);
+  box-shadow: 0 0 18px rgba(0, 255, 106, .18);
+}
+body.theme-neon-carbon .pl-option.selected .pl-option-key {
+  background: var(--nc-green); border-color: var(--nc-green); color: #04150B;
+}
+body.theme-neon-carbon .pl-option.correct {
+  border-color: var(--nc-green);
+  background: rgba(0, 255, 106, .12);
+}
+body.theme-neon-carbon .pl-option.correct .pl-option-key { background: var(--nc-green); border-color: var(--nc-green); color: #04150B; }
+body.theme-neon-carbon .pl-option.wrong {
+  border-color: var(--nc-red);
+  background: rgba(255, 59, 78, .12);
+}
+body.theme-neon-carbon .pl-option.wrong .pl-option-key { background: var(--nc-red); border-color: var(--nc-red); color: #fff; }
+
+body.theme-neon-carbon .pl-nav-btn {
+  background: var(--nc-carbon-up);
+  border: 1px solid var(--nc-line-bright);
+  color: var(--nc-text-dim);
+}
+body.theme-neon-carbon .pl-nav-btn:hover { border-color: var(--nc-green); color: var(--nc-green); }
+body.theme-neon-carbon .pl-nav-btn.answered {
+  background: var(--nc-green-dim); border-color: var(--nc-green); color: var(--nc-green);
+}
+body.theme-neon-carbon .pl-nav-btn.current {
+  outline: 2px solid var(--nc-cyan); outline-offset: 1px; color: var(--nc-cyan);
+}
+body.theme-neon-carbon .pl-navigator { direction: ltr; } /* أرقام الأسئلة تتسلسل يساراً ليميناً */
+body.theme-neon-carbon .pl-sticky-actions {
+  background: rgba(10, 13, 14, .9);
+  border: 1px solid var(--nc-line);
+}
+body.theme-neon-carbon .pl-legend { color: var(--nc-text-dim); }
+body.theme-neon-carbon .pl-result-ring { color: var(--nc-green); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   8) الصفحات العامة: الواجهة، المزايا، الباقات، الشهادات
+   ═══════════════════════════════════════════════════════════════════ */
+body.theme-neon-carbon .pl-hero {
+  background:
+    radial-gradient(1000px 520px at 80% -10%, rgba(0, 255, 106, .16), transparent 60%),
+    radial-gradient(800px 420px at 10% 10%, rgba(0, 240, 255, .10), transparent 60%),
+    linear-gradient(150deg, #050706 0%, #0A0F0C 55%, #071B10 100%);
+  color: #fff;
+  border-bottom: 1px solid var(--nc-line);
+  position: relative;
+}
+body.theme-neon-carbon .pl-hero h1 { text-shadow: 0 0 26px rgba(0, 255, 106, .28); }
+body.theme-neon-carbon .pl-hero p.lead { color: #C9DFD2; }
+body.theme-neon-carbon .pl-hero-card {
+  background: rgba(12, 14, 16, .92);
+  border: 1px solid var(--nc-line-bright);
+  color: var(--nc-text);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .55);
+}
+body.theme-neon-carbon .pl-stat-pill {
+  background: rgba(0, 255, 106, .06);
+  border: 1px solid var(--nc-green-dim);
+  color: #fff;
+}
+body.theme-neon-carbon .pl-stat-pill .value { color: var(--nc-green); }
+body.theme-neon-carbon .pl-stat-pill .label { color: var(--nc-text-dim); }
+
+body.theme-neon-carbon .pl-feature:hover {
+  transform: translateY(-4px);
+  border-color: var(--nc-green-dim);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .55);
+}
+body.theme-neon-carbon .pl-feature-icon {
+  background: var(--nc-green-ghost); border: 1px solid var(--nc-green-dim); color: var(--nc-green);
+}
+body.theme-neon-carbon .pl-price { color: var(--nc-green); text-shadow: 0 0 22px rgba(0, 255, 106, .25); }
+body.theme-neon-carbon .pl-price small { color: var(--nc-text-dim); }
+body.theme-neon-carbon .pl-price-card.featured {
+  border-color: var(--nc-green);
+  box-shadow: 0 0 0 1px rgba(0, 255, 106, .25), 0 18px 46px rgba(0, 0, 0, .55);
+}
+body.theme-neon-carbon .pl-price-card.featured::before { background: var(--nc-green); color: #04150B; }
+body.theme-neon-carbon .pl-check-list li::before { color: var(--nc-green); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   9) صفحات الدخول
+   ═══════════════════════════════════════════════════════════════════ */
+body.theme-neon-carbon .pl-auth-side {
+  background:
+    radial-gradient(600px 380px at 20% 15%, rgba(0, 255, 106, .16), transparent 60%),
+    linear-gradient(160deg, #050706, #0A1A10);
+  color: #fff;
+  border-inline-end: 1px solid var(--nc-line);
+}
+body.theme-neon-carbon .pl-auth-card {
+  background: var(--nc-panel);
+  border: 1px solid var(--nc-line);
+  color: var(--nc-text);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .55);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   10) عناصر مساعدة + الطباعة + تقليل الحركة
+   ═══════════════════════════════════════════════════════════════════ */
+body.theme-neon-carbon .pl-empty {
+  background: var(--nc-panel); border: 1px dashed var(--nc-line-bright); color: var(--nc-text-dim);
+}
+body.theme-neon-carbon .pl-code-block {
+  background: #050706 !important; color: var(--nc-green-soft) !important;
+  border: 1px solid var(--nc-line); direction: ltr; text-align: left;
+}
+body.theme-neon-carbon .pl-table-wrap { background: var(--nc-panel); border: 1px solid var(--nc-line); }
+body.theme-neon-carbon .pl-avatar { border: 1px solid var(--nc-line-bright); }
+body.theme-neon-carbon ::selection { background: rgba(0, 255, 106, .28); color: #fff; }
+
+/* ظهور تدريجي اختياري: يبقى المحتوى ظاهراً بدون جافاسكربت */
+body.theme-neon-carbon.nc-js .nc-reveal { opacity: 0; transform: translateY(12px); transition: opacity .5s ease, transform .5s ease; }
+body.theme-neon-carbon.nc-js .nc-reveal.nc-visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  body.theme-neon-carbon *,
+  body.theme-neon-carbon *::before,
+  body.theme-neon-carbon *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+  body.theme-neon-carbon.nc-js .nc-reveal { opacity: 1 !important; transform: none !important; }
+}
+
+/* طباعة الاختبار: خلفية فاتحة */
+@media print {
+  body.theme-neon-carbon { background: #fff !important; color: #000 !important; }
+  body.theme-neon-carbon::before { display: none !important; }
+  body.theme-neon-carbon .card,
+  body.theme-neon-carbon .pl-question-card,
+  body.theme-neon-carbon .pl-option { background: #fff !important; color: #000 !important; border-color: #bbb !important; box-shadow: none !important; }
+  body.theme-neon-carbon .card::before,
+  body.theme-neon-carbon .pl-question-card::before { display: none !important; }
+}

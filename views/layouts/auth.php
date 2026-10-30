@@ -21,13 +21,17 @@ $pageStyles = $pageStyles ?? [];
     <link rel="stylesheet" href="<?= e(asset('assets/css/bootstrap.rtl.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('assets/css/bootstrap-icons.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('assets/css/app.css')) ?>">
+    <?php if (design_theme_is('celadon')): ?>
     <link rel="stylesheet" href="<?= e(asset('assets/css/celadon.css')) ?>">
+    <?php elseif (design_theme_is('neon-carbon')): ?>
+    <link rel="stylesheet" href="<?= e(asset('assets/css/neon-carbon.css')) ?>">
+    <?php endif; ?>
     <?php foreach ($pageStyles as $style): ?>
         <link rel="stylesheet" href="<?= e($style) ?>">
     <?php endforeach; ?>
     <link rel="icon" href="<?= e(asset('assets/img/favicon.svg')) ?>" type="image/svg+xml">
 </head>
-<body>
+<body class="theme-<?= e(design_theme()) ?>">
 <div class="pl-auth-wrap">
     <div class="col-lg-5 pl-auth-side">
         <a href="<?= e(url('')) ?>" class="pl-brand text-white d-flex align-items-center gap-2 mb-4">
@@ -60,13 +64,17 @@ $pageStyles = $pageStyles ?? [];
                 <button class="btn btn-link btn-sm text-decoration-none" type="button" onclick="plToggleTheme()">
                     <i class="bi bi-moon-stars me-1" data-theme-icon></i> تبديل الوضع الليلي
                 </button>
-                <p class="small text-muted mb-0 mt-2 cl-credit">التصميم مستوحى من قالب Celadon: Design by <a rel="nofollow noopener" href="https://templatemo.com" target="_blank">TemplateMo</a> <a rel="nofollow noopener" href="https://www.tooplate.com" target="_blank">Tooplate</a></p>
+                <p class="small text-muted mb-0 mt-2 cl-credit"><?= e(theme_credit()) ?><?php if (design_theme() !== 'green'): ?> — Design by <a rel="nofollow noopener" href="https://www.tooplate.com" target="_blank">Tooplate</a> · <a rel="nofollow noopener" href="https://templatemo.com" target="_blank">TemplateMo</a><?php endif; ?></p>
             </div>
         </div>
     </div>
 </div>
 <script src="<?= e(asset('assets/js/bootstrap.bundle.min.js')) ?>"></script>
 <script src="<?= e(asset('assets/js/app.js')) ?>"></script>
+<?php if (design_theme_is('celadon')): ?>
 <script src="<?= e(asset('assets/js/celadon.js')) ?>"></script>
+<?php elseif (design_theme_is('neon-carbon')): ?>
+<script src="<?= e(asset('assets/js/neon-carbon.js')) ?>"></script>
+<?php endif; ?>
 </body>
 </html>

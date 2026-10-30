@@ -7,7 +7,9 @@
                     <h1 class="h3 mt-3">المنصة تحت الصيانة</h1>
                     <p class="text-muted">نقوم حالياً بتحديث المنصة. نعتذر عن الإزعاج وسنعود قريباً بإذن الله.</p>
                     <?php if (trim((string) settings('contact_phone', '')) !== ''): ?>
-                        <p class="small text-muted mb-0">للتواصل: <?= e(settings('contact_phone')) ?></p>
+                        <p class="small text-muted mb-0">للتواصل:
+                            <a class="link-light" dir="ltr" href="https://wa.me/<?= e(contact_phone_intl()) ?>" target="_blank" rel="noopener"><?= e(contact_phone_display()) ?></a>
+                        </p>
                     <?php endif; ?>
                 </div>
             </div>

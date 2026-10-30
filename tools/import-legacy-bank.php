@@ -58,20 +58,20 @@ $dedupe = !cli_has_flag('no-dedupe');
 function out_line(string $message, bool $quiet = false): void
 {
     if (!$quiet) {
-        fwrite(STDOUT, $message . "\n");
+        fwrite(cli_out(), $message . "\n");
     }
 }
 
 if ($file === '' || !is_file($file)) {
-    fwrite(STDERR, "خطأ: حدّد مسار ملف SQL بصيغة --file=/path/legacy.sql\n");
+    fwrite(cli_err(), "خطأ: حدّد مسار ملف SQL بصيغة --file=/path/legacy.sql\n");
     exit(1);
 }
 if ($outDir === '') {
-    fwrite(STDERR, "خطأ: حدّد مجلد الإخراج بصيغة --out=/path/output\n");
+    fwrite(cli_err(), "خطأ: حدّد مجلد الإخراج بصيغة --out=/path/output\n");
     exit(1);
 }
 if (!is_dir($outDir) && !mkdir($outDir, 0775, true) && !is_dir($outDir)) {
-    fwrite(STDERR, "خطأ: تعذّر إنشاء مجلد الإخراج: {$outDir}\n");
+    fwrite(cli_err(), "خطأ: تعذّر إنشاء مجلد الإخراج: {$outDir}\n");
     exit(1);
 }
 $outDir = rtrim($outDir, '/\\');
@@ -88,8 +88,8 @@ $parsed = LegacyBankImporter::parseLegacySql($sql);
 out_line('  المسارات المذكورة في الملف: ' . count($parsed['tracks']), $quiet);
 out_line('  الأسئلة المقروءة: ' . number_format(count($parsed['questions'])), $quiet);
 if ($parsed['questions'] === []) {
-    fwrite(STDERR, "خطأ: لم يُعثر على أي جملة INSERT INTO questions ... VALUES في الملف.\n");
-    fwrite(STDERR, "تأكد من أن الملف يحتوي الجملة بهذه الصيغة (حتى لو اختلفت أسماء الأعمدة).\n");
+    fwrite(cli_err(), "خطأ: لم يُعثر على أي جملة INSERT INTO questions ... VALUES في الملف.\n");
+    fwrite(cli_err(), "تأكد من أن الملف يحتوي الجملة بهذه الصيغة (حتى لو اختلفت أسماء الأعمدة).\n");
     exit(1);
 }
 

@@ -11,7 +11,7 @@
  */
 declare(strict_types=1);
 
-if (!in_array(PHP_SAPI, ['cli', 'phpdbg', 'wasm'], true)) {
+if (!in_array(PHP_SAPI, ['cli', 'phpdbg', 'wasm'], true) && !defined('LOKMEN_WASM_RUNNER')) {
     http_response_code(403);
     exit('هذا الملف يعمل من سطر الأوامر فقط.');
 }

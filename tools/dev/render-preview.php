@@ -26,15 +26,18 @@ function preview_seed(): void
 {
     FakeDatabase::reset();
     FakeDatabase::seed('settings', [
-        ['key' => 'site_name', 'value' => 'منصة الرخصة المهنية'],
-        ['key' => 'site_description', 'value' => 'منصة سعودية للتدريب على اختبار الرخصة المهنية للمعلمين'],
-        ['key' => 'subscription_price', 'value' => '100'],
-        ['key' => 'subscription_days', 'value' => '365'],
-        ['key' => 'maintenance_mode', 'value' => '0'],
-        ['key' => 'contact_phone', 'value' => '+966 55 000 0000'],
-        ['key' => 'contact_email', 'value' => 'info@example.com'],
-        ['key' => 'telegram_bot_username', 'value' => 'lokmen_bot'],
-        ['key' => 'exam_default_pass', 'value' => '60'],
+        ['setting_key' => 'site_name', 'setting_value' => 'منصة الرخصة المهنية'],
+        ['setting_key' => 'site_description', 'setting_value' => 'منصة سعودية للتدريب على اختبار الرخصة المهنية للمعلمين'],
+        ['setting_key' => 'subscription_price', 'setting_value' => '100'],
+        ['setting_key' => 'subscription_days', 'setting_value' => '365'],
+        ['setting_key' => 'maintenance_mode', 'setting_value' => '0'],
+        ['setting_key' => 'contact_phone', 'setting_value' => '966566293743'],
+        ['key' => 'bank_name',     'value' => 'بنك إس تي سي (STC Bank)'],
+        ['key' => 'bank_iban',     'value' => 'SA5678000000001259468554'],
+        ['key' => 'design_theme',  'value' => 'neon-carbon'],
+        ['setting_key' => 'contact_email', 'setting_value' => 'info@example.com'],
+        ['setting_key' => 'telegram_bot_username', 'setting_value' => 'lokmen_bot'],
+        ['setting_key' => 'exam_default_pass', 'setting_value' => '60'],
     ]);
     FakeDatabase::seed('users', [
         ['id' => 1, 'full_name' => 'أ. عبدالله المطيري', 'email' => 'admin@example.com', 'phone' => '966500000001',
@@ -184,11 +187,11 @@ if ($only === '') {
         }
         exit(0);
     }
-    fwrite(STDERR, "استخدم --route=<page> لصفحة واحدة، أو --list لعرض القائمة.\n");
+    fwrite(cli_err(), "استخدم --route=<page> لصفحة واحدة، أو --list لعرض القائمة.\n");
     exit(64);
 }
 if (!isset($routes[$only])) {
-    fwrite(STDERR, "صفحة غير معروفة: {$only}\n");
+    fwrite(cli_err(), "صفحة غير معروفة: {$only}\n");
     exit(2);
 }
 

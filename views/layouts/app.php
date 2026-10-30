@@ -26,13 +26,17 @@ $breadcrumbs = $breadcrumbs ?? [];
     <link rel="stylesheet" href="<?= e(asset('assets/css/bootstrap.rtl.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('assets/css/bootstrap-icons.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('assets/css/app.css')) ?>">
+    <?php if (design_theme_is('celadon')): ?>
     <link rel="stylesheet" href="<?= e(asset('assets/css/celadon.css')) ?>">
+    <?php elseif (design_theme_is('neon-carbon')): ?>
+    <link rel="stylesheet" href="<?= e(asset('assets/css/neon-carbon.css')) ?>">
+    <?php endif; ?>
     <?php foreach ($pageStyles as $style): ?>
         <link rel="stylesheet" href="<?= e($style) ?>">
     <?php endforeach; ?>
     <link rel="icon" href="<?= e(asset('assets/img/favicon.svg')) ?>" type="image/svg+xml">
 </head>
-<body>
+<body class="theme-<?= e(design_theme()) ?>">
 <div class="pl-app">
     <?php require \App\View::path('partials/sidebar'); ?>
     <div class="pl-main">
@@ -65,7 +69,7 @@ $breadcrumbs = $breadcrumbs ?? [];
         </main>
         <footer class="text-center py-3 small text-muted border-top">
             <?= e(settings('site_name', config('app.name'))) ?> © <?= e(date('Y')) ?> — الإصدار <?= e(config('app.version')) ?>
-            <span class="d-block mt-1 cl-credit">التصميم مستوحى من قالب Celadon: Design by <a rel="nofollow noopener" href="https://templatemo.com" target="_blank">TemplateMo</a> <a rel="nofollow noopener" href="https://www.tooplate.com" target="_blank">Tooplate</a></span>
+            <span class="d-block mt-1 cl-credit"><?= e(theme_credit()) ?><?php if (design_theme() !== 'green'): ?> — Design by <a rel="nofollow noopener" href="https://www.tooplate.com" target="_blank">Tooplate</a> · <a rel="nofollow noopener" href="https://templatemo.com" target="_blank">TemplateMo</a><?php endif; ?></span>
         </footer>
     </div>
 </div>
@@ -73,7 +77,11 @@ $breadcrumbs = $breadcrumbs ?? [];
 <script src="<?= e(asset('assets/js/bootstrap.bundle.min.js')) ?>"></script>
 <script src="<?= e(asset('assets/js/chart.min.js')) ?>"></script>
 <script src="<?= e(asset('assets/js/app.js')) ?>"></script>
+<?php if (design_theme_is('celadon')): ?>
 <script src="<?= e(asset('assets/js/celadon.js')) ?>"></script>
+<?php elseif (design_theme_is('neon-carbon')): ?>
+<script src="<?= e(asset('assets/js/neon-carbon.js')) ?>"></script>
+<?php endif; ?>
 <?php foreach ($pageScripts as $script): ?>
     <script src="<?= e($script) ?>"></script>
 <?php endforeach; ?>

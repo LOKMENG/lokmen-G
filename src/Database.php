@@ -86,14 +86,20 @@ final class Database
             $cfg['charset']
         );
 
+        // بعض بيئات PHP المدمجة (مثل تشغيل الفحوصات داخل PHP-WASM) لا تعرّف
+        // ثوابت خاصة بامتداد pdo_mysql؛ نتأكد من وجودها قبل استخدامها.
+        $options = [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
+            PDO::ATTR_STRINGIFY_FETCHES  => false,
+        ];
+        if (defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
+            $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES {$cfg['charset']} COLLATE {$cfg['charset']}_unicode_ci, time_zone = '+03:00'";
+        }
+
         try {
-            $this->pdo = new PDO($dsn, (string) $cfg['user'], (string) $cfg['pass'], [
-                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES   => false,
-                PDO::ATTR_STRINGIFY_FETCHES  => false,
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES {$cfg['charset']} COLLATE {$cfg['charset']}_unicode_ci, time_zone = '+03:00'",
-            ]);
+            $this->pdo = new PDO($dsn, (string) $cfg['user'], (string) $cfg['pass'], $options);
         } catch (PDOException $e) {
             Logger::error('تعذّر الاتصال بقاعدة البيانات: ' . $e->getMessage());
             throw new RuntimeException(

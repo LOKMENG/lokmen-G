@@ -41,13 +41,20 @@ return [
     ],
 
     'security' => [
-        'csrf_ttl'            => 7200,   // ثانية
-        'login_max_attempts'  => 5,      // محاولات الدخول قبل الحظر المؤقت
-        'login_lock_minutes'  => 15,
-        'register_max_per_ip' => 5,      // تسجيلات من نفس الـ IP في الساعة
-        'password_min_length' => 8,
-        'session_fingerprint' => true,   // ربط الجلسة ببصمة المتصفح
-        'headers'             => true,   // إرسال رؤوس حماية HTTP
+        'csrf_ttl'              => 7200,   // ثانية
+        'login_max_attempts'    => 5,      // محاولات الدخول قبل الحظر المؤقت
+        'login_lock_minutes'    => 15,
+        'register_max_per_ip'   => (int) env('REGISTER_MAX_PER_IP', 5),
+        'reset_max_per_hour'    => (int) env('RESET_MAX_PER_HOUR', 5),
+        'password_min_length'   => (int) env('PASSWORD_MIN_LENGTH', 10),
+        'session_fingerprint'   => Env::bool('SESSION_FINGERPRINT', true),
+        'session_idle_minutes'  => (int) env('SESSION_IDLE_MINUTES', 120),
+        'session_max_minutes'   => (int) env('SESSION_MAX_MINUTES', 720),
+        'headers'               => Env::bool('SECURITY_HEADERS', true),
+        'force_https'           => Env::bool('FORCE_HTTPS', false),
+        'hsts_max_age'          => (int) env('HSTS_MAX_AGE', 31536000),
+        'admin_ip_allowlist'    => (string) env('ADMIN_IP_ALLOWLIST', ''),
+        'audit_security_events' => Env::bool('AUDIT_SECURITY_EVENTS', true),
     ],
 
     'uploads' => [
