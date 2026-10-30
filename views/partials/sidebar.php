@@ -76,6 +76,9 @@ $subStatus = user() && !$isAdminArea ? \App\Services\SubscriptionService::status
             <a class="nav-link <?= is_active_menu('admin/reports-queue') ? 'active' : '' ?>" href="<?= e(url('admin/reports-queue')) ?>">
                 <i class="bi bi-flag"></i> بلاغات الأسئلة
             </a>
+            <a class="nav-link <?= is_active_menu('admin/security') ? 'active' : '' ?>" href="<?= e(url('admin/security')) ?>">
+                <i class="bi bi-shield-lock"></i> فحص الحماية
+            </a>
             <div class="nav-section">الاختبارات والنظام</div>
             <a class="nav-link <?= is_active_menu('admin/exams') ? 'active' : '' ?>" href="<?= e(url('admin/exams')) ?>">
                 <i class="bi bi-journal-check"></i> قوالب الاختبارات

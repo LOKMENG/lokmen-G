@@ -60,7 +60,15 @@ $fieldTypes = [
                                 }
                                 ?>
                                 <div class="col-md-6">
-                                    <?php if ($type === 'bool' || $inputType === 'bool'): ?>
+                                    <?php if ($key === 'design_theme'): ?>
+                                    <label class="form-label" for="set_design_theme"><?= e($setting['label']) ?></label>
+                                    <select class="form-select" id="set_design_theme" name="settings[design_theme]">
+                                        <option value="neon-carbon" <?= design_theme_is('neon-carbon') ? 'selected' : '' ?>>نيون كاربون — Neon Carbon (داكن/أخضر نيون)</option>
+                                        <option value="green" <?= design_theme_is('green') ? 'selected' : '' ?>>النسخة الأولى (الأخضر)</option>
+                                        <option value="celadon" <?= design_theme_is('celadon') ? 'selected' : '' ?>>سيلادون (كلايمورفيزم)</option>
+                                    </select>
+                                    <div class="form-text">نيون كاربون هو الافتراضي ويعمل بالكامل مع العربية و RTL وواجهة الاختبارات. غيّر القالب ثم احفظ.</div>
+                                <?php elseif ($type === 'bool' || $inputType === 'bool'): ?>
                                         <div class="form-check form-switch mt-4">
                                             <input class="form-check-input" type="checkbox" role="switch" id="set_<?= e($key) ?>"
                                                    name="bools[]" value="<?= e($key) ?>" <?= (bool) $setting['value'] ? 'checked' : '' ?>>

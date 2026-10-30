@@ -600,6 +600,69 @@ if (!function_exists('audit')) {
     }
 }
 
+if (!function_exists('design_theme')) {
+    /**
+     * قالب التصميم الحالي.
+     *   green   = القالب الأول (النسخة الأولى — الافتراضي)
+     *   celadon = القالب الثاني (سيلادون — كلايمورفيزم عربي RTL)
+     * يُضبط من: لوحة التحكم ← الإعدادات ← إعدادات عامة ← قالب التصميم.
+     */
+    function design_theme(): string
+    {
+        $theme = strtolower(trim((string) settings('design_theme', 'neon-carbon')));
+        return in_array($theme, ['celadon', 'green', 'neon-carbon'], true) ? $theme : 'neon-carbon';
+    }
+}
+
+if (!function_exists('theme_credit')) {
+    /**
+     * سطر النسبة في التذييل حسب القالب المفعّل.
+     * القالبان Celadon و Neon Carbon مجانيان بشروط تبقى فيها نسبة القالب.
+     */
+    function theme_credit(): string
+    {
+        return match (design_theme()) {
+            'neon-carbon' => 'التصميم مستوحى من قالب Neon Carbon 2165',
+            'celadon'     => 'التصميم مستوحى من قالب Celadon 633',
+            default       => 'التصميم: الهوية الخضراء لمنصة الرخصة المهنية',
+        };
+    }
+}
+
+if (!function_exists('contact_phone_display')) {
+    /** يعرض رقم الجوال بالصيغة المحلية (05XXXXXXXX) للعرض فقط. */
+    function contact_phone_display(): string
+    {
+        $digits = preg_replace('/\D+/', '', (string) settings('contact_phone', '')) ?? '';
+        if ($digits === '') {
+            return '';
+        }
+        return str_starts_with($digits, '966') ? '0' . substr($digits, 3) : $digits;
+    }
+}
+
+if (!function_exists('contact_phone_intl')) {
+    /** رقم الجوال بالصيغة الدولية بدون + (لروابط واتساب). */
+    function contact_phone_intl(): string
+    {
+        $digits = preg_replace('/\D+/', '', (string) settings('contact_phone', '')) ?? '';
+        if ($digits === '') {
+            return '';
+        }
+        if (str_starts_with($digits, '00')) {
+            $digits = substr($digits, 2);
+        }
+        return str_starts_with($digits, '0') ? '966' . substr($digits, 1) : $digits;
+    }
+}
+
+if (!function_exists('design_theme_is')) {
+    function design_theme_is(string $theme): bool
+    {
+        return design_theme() === $theme;
+    }
+}
+
 if (!function_exists('is_cli')) {
     /**
      * هل التنفيذ من سطر الأوامر؟
@@ -607,7 +670,7 @@ if (!function_exists('is_cli')) {
      */
     function is_cli(): bool
     {
-        return in_array(PHP_SAPI, ['cli', 'phpdbg', 'wasm'], true);
+        return in_array(PHP_SAPI, ['cli', 'phpdbg', 'wasm'], true) || defined('LOKMEN_WASM_RUNNER');
     }
 }
 
@@ -625,6 +688,38 @@ if (!function_exists('cli_args')) {
         $raw = (string) ($_SERVER['APP_ARGV'] ?? getenv('APP_ARGV') ?: '');
         $parts = preg_split('/\s+/', trim($raw)) ?: [];
         return array_values(array_filter($parts, static fn(string $part): bool => $part !== ''));
+    }
+}
+
+if (!function_exists('cli_out')) {
+    /** مجرى الإخراج القياسي — يعمل على CLI وphp-wasm وكل بيئة */
+    function cli_out()
+    {
+        static $handle = null;
+        if ($handle === null) {
+            $handle = defined('STDOUT') ? \STDOUT : fopen('php://stdout', 'w');
+        }
+        return $handle;
+    }
+}
+
+if (!function_exists('cli_err')) {
+    /** مجرى الخطأ القياسي — يعمل على CLI وphp-wasm وكل بيئة */
+    function cli_err()
+    {
+        static $handle = null;
+        if ($handle === null) {
+            $handle = defined('STDERR') ? \STDERR : fopen('php://stderr', 'w');
+        }
+        return $handle;
+    }
+}
+
+if (!function_exists('cli_write')) {
+    /** كتابة سطر على مجرى محدد (افتراضياً الإخراج القياسي) */
+    function cli_write(string $message, bool $error = false): void
+    {
+        fwrite($error ? cli_err() : cli_out(), $message);
     }
 }
 

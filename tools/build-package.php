@@ -31,22 +31,22 @@ if ($out !== null && $out !== '') {
     }
     $targetDir = dirname($out);
     if (!is_dir($targetDir) && !mkdir($targetDir, 0755, true)) {
-        fwrite(STDERR, "تعذّر إنشاء المجلد: {$targetDir}\n");
+        fwrite(cli_err(), "تعذّر إنشاء المجلد: {$targetDir}\n");
         exit(1);
     }
     $zipPath = $out;
 } else {
     if (!is_dir($buildDir) && !mkdir($buildDir, 0755, true)) {
-        fwrite(STDERR, "تعذّر إنشاء مجلد storage/build\n");
+        fwrite(cli_err(), "تعذّر إنشاء مجلد storage/build\n");
         exit(1);
     }
     $zipPath = str_starts_with($name, '/') ? $name : $buildDir . '/' . basename($name);
 }
 
 if (!class_exists('ZipArchive')) {
-    fwrite(STDERR, "إضافة zip غير مفعّلة في PHP.\n");
-    fwrite(STDERR, "الحل: فعّل extension=zip من php.ini، أو اضغط المجلد يدوياً مع استثناء:\n");
-    fwrite(STDERR, "  .git، .env، node_modules، storage/build، storage/logs/*، uploads/*\n");
+    fwrite(cli_err(), "إضافة zip غير مفعّلة في PHP.\n");
+    fwrite(cli_err(), "الحل: فعّل extension=zip من php.ini، أو اضغط المجلد يدوياً مع استثناء:\n");
+    fwrite(cli_err(), "  .git، .env، node_modules، storage/build، storage/logs/*، uploads/*\n");
     exit(1);
 }
 
@@ -64,7 +64,7 @@ if (!$withTests) {
 
 $zip = new ZipArchive();
 if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-    fwrite(STDERR, "تعذّر إنشاء ملف ZIP: {$zipPath}\n");
+    fwrite(cli_err(), "تعذّر إنشاء ملف ZIP: {$zipPath}\n");
     exit(1);
 }
 

@@ -18,9 +18,20 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/config/bootstrap.php';
 
+// التشغيل عبر سطر الأوامر هو الأصل. وللاستضافات المشتركة التي لا توفر SSH،
+// يُسمح بالتشغيل عبر الويب بشرط تمرير رمز سري من .env (CRON_TOKEN):
+//      https://example.com/tools/cron.php?token=الرمز
+// الرمز يُقارَن بـ hash_equals ولا يُقبل الطلب بدونه (403).
 if (!is_cli()) {
-    http_response_code(403);
-    exit('هذا الملف يعمل من سطر الأوامر فقط.');
+    $expected = (string) env('CRON_TOKEN', '');
+    $provided = (string) ($_GET['token'] ?? '');
+    if ($expected === '' || $provided === '' || !hash_equals($expected, $provided)) {
+        http_response_code(403);
+        header('Content-Type: text/plain; charset=utf-8');
+        exit('403 — غير مصرح. استخدم سطر الأوامر أو مرّر الرمز: ?token=...');
+    }
+    header('Content-Type: text/plain; charset=utf-8');
+    define('CRON_WEB_RUN', true);
 }
 
 use App\Database;
@@ -34,12 +45,12 @@ $task = cli_option('task', 'all');
 function cron_line(string $message, bool $quiet = false): void
 {
     if (!$quiet) {
-        fwrite(STDOUT, '[' . date('Y-m-d H:i:s') . '] ' . $message . "\n");
+        fwrite(cli_out(), '[' . date('Y-m-d H:i:s') . '] ' . $message . "\n");
     }
 }
 
 if (!is_file(BASE_PATH . '/.env')) {
-    fwrite(STDERR, "ملف .env غير موجود — نفّذ التثبيت أولاً.\n");
+    fwrite(cli_err(), "ملف .env غير موجود — نفّذ التثبيت أولاً.\n");
     exit(1);
 }
 
@@ -49,7 +60,7 @@ $started = microtime(true);
 try {
     Database::instance()->pdo();
 } catch (Throwable $error) {
-    fwrite(STDERR, 'تعذّر الاتصال بقاعدة البيانات: ' . $error->getMessage() . "\n");
+    fwrite(cli_err(), 'تعذّر الاتصال بقاعدة البيانات: ' . $error->getMessage() . "\n");
     exit(1);
 }
 

@@ -40,7 +40,7 @@ $fakeDbRequested = (defined('APP_TEST_FAKE_DB') && APP_TEST_FAKE_DB === true) ||
 
 // التحويل إلى المعالج يخصّ طلبات المتصفح فقط:
 // أدوات سطر الأوامر (cron، بناء الحزمة، الفحوصات) تتعامل مع غياب .env بنفسها.
-$isCommandLine = in_array(PHP_SAPI, ['cli', 'phpdbg', 'wasm'], true);
+$isCommandLine = in_array(PHP_SAPI, ['cli', 'phpdbg', 'wasm'], true) || defined('LOKMEN_WASM_RUNNER');
 
 if (!$envLoaded && !$isInstaller && !$fakeDbRequested && !$isCommandLine) {
     $base = rtrim(str_replace('\\', '/', dirname((string) ($_SERVER['SCRIPT_NAME'] ?? '/'))), '/');
@@ -126,9 +126,21 @@ register_shutdown_function(static function (): void {
 // ملاحظة: نقاط النهاية التي لا تحتاج جلسة (مثل ويبهوك تلجرام) تعرّف
 // APP_NO_SESSION قبل تضمين هذا الملف لتوفير موارد الخادم وتجنب إنشاء كوكيز.
 // ---------------------------------------------------------------------
+//  4.5) فرض HTTPS (اختياري من الإعدادات) — قبل أي جلسة أو كوكي
+// ---------------------------------------------------------------------
+if (!is_cli() && (bool) config('security.force_https', false) && !Security::isHttps()) {
+    $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
+    $uri  = (string) ($_SERVER['REQUEST_URI'] ?? '/');
+    if ($host !== '' && !str_contains($host, '127.0.0.1') && !str_contains($host, 'localhost')) {
+        header('Location: https://' . $host . $uri, true, 301);
+        exit;
+    }
+}
+
+// ---------------------------------------------------------------------
 //  5) الجلسة الآمنة
 // ---------------------------------------------------------------------
-if (session_status() !== PHP_SESSION_ACTIVE && PHP_SAPI !== 'cli'
+if (session_status() !== PHP_SESSION_ACTIVE && PHP_SAPI !== 'cli' && !defined('LOKMEN_WASM_RUNNER')
     && !(defined('APP_NO_SESSION') && APP_NO_SESSION === true)) {
     $lifetime = (int) config('session.lifetime', 180) * 60;
     ini_set('session.use_strict_mode', '1');
@@ -146,12 +158,53 @@ if (session_status() !== PHP_SESSION_ACTIVE && PHP_SAPI !== 'cli'
         'samesite' => (string) config('session.samesite', 'Lax'),
     ]);
     session_start();
+
+    // إنهاء الجلسة عند الخمول الطويل أو تجاوز العمر الأقصى (حماية من سرقة الجلسة)
+    if (isset($_SESSION['user_id'])) {
+        $now         = time();
+        $idleMax     = max(5, (int) config('security.session_idle_minutes', 120)) * 60;
+        $absoluteMax = max(15, (int) config('security.session_max_minutes', 720)) * 60;
+        $startedAt   = (int) ($_SESSION['session_started_at'] ?? $now);
+        $lastSeen    = (int) ($_SESSION['last_seen_at'] ?? $now);
+
+        if (($now - $lastSeen) > $idleMax) {
+            Logger::security('إنهاء الجلسة لتجاوز مدة الخمول', Security::requestContext() + ['user_id' => (int) $_SESSION['user_id']]);
+            session_destroy();
+            session_start();
+        } elseif (($now - $startedAt) > $absoluteMax) {
+            Logger::security('إنهاء الجلسة لتجاوز العمر الأقصى', Security::requestContext() + ['user_id' => (int) $_SESSION['user_id']]);
+            session_destroy();
+            session_start();
+        } else {
+            $_SESSION['last_seen_at'] = $now;
+        }
+    }
 }
 
 // ---------------------------------------------------------------------
 //  6) رؤوس الحماية
 // ---------------------------------------------------------------------
 Security::sendSecurityHeaders();
+
+// ---------------------------------------------------------------------
+//  6.5) حماية إضافية: منع الوصول للوحة الإدارة إلا من عناوين IP مصرَّح بها
+// ---------------------------------------------------------------------
+$adminAllowlist = trim((string) (config('security.admin_ip_allowlist', '') ?: (string) env('ADMIN_IP_ALLOWLIST', '')));
+$requestPath = (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH);
+$isAdminArea = preg_match('#(^|/)admin(/|$)#i', $requestPath) === 1
+    || str_contains((string) ($_SERVER['SCRIPT_NAME'] ?? ''), '/admin/');
+if ($adminAllowlist !== '' && !is_cli() && $isAdminArea) {
+    $allowed = array_map('trim', explode(',', $adminAllowlist));
+    if (!in_array(Security::ip(), $allowed, true)) {
+        Logger::security('محاولة دخول للوحة الإدارة من IP غير مصرح', Security::requestContext());
+        http_response_code(403);
+        header('Content-Type: text/html; charset=utf-8');
+        echo '<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>403</title>'
+            . '<body style="font-family:Tahoma,sans-serif;text-align:center;padding-top:15vh">'
+            . '<h1>403</h1><p>غير مصرح بالوصول إلى لوحة الإدارة من هذا العنوان.</p></body></html>';
+        exit;
+    }
+}
 
 // ---------------------------------------------------------------------
 //  7) منفذ حقن اتصال قاعدة البيانات (للاختبارات والمعاينة المحلية فقط)
