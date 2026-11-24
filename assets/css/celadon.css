@@ -32,9 +32,9 @@
   --cl-plate-2: #EAF0FA;
   --cl-sunk: #DCE4F3;
   --cl-ink: #232D3C;
-  --cl-ink-2: #67758B;
+  --cl-ink-2: #56647A;
   --cl-jade: #7CCFB0;
-  --cl-jade-ink: #2A7A62;
+  --cl-jade-ink: #216A54;
   --cl-coral: #E8735C;
   --cl-sky: #B7D4F5;
   --cl-line: rgba(35, 45, 60, .09);
@@ -268,7 +268,7 @@ hr { border-color: var(--cl-line); opacity: 1; }
   box-shadow: var(--cl-clay-sm), var(--cl-lip-jade), var(--cl-lift-jade);
 }
 .cl-btn.solid:hover { box-shadow: var(--cl-clay), var(--cl-lip-jade), var(--cl-lift-jade-hi); }
-.cl-btn.coral { color: #40150E; background: var(--cl-gloss-coral); }
+.cl-btn.coral { color: #2A0C07; background: var(--cl-gloss-coral); }
 .cl-btn.wide { width: 100%; }
 .cl-btn.sm { padding: 11px 19px; font-size: .88rem; }
 .cl-btn.lg { padding: 18px 32px; font-size: 1.04rem; }
@@ -314,7 +314,7 @@ hr { border-color: var(--cl-line); opacity: 1; }
   box-shadow: var(--cl-clay-sm), var(--cl-lip);
 }
 .cl-disc.jade { background: var(--cl-gloss-jade); color: #103A2C; box-shadow: var(--cl-clay-sm), var(--cl-lip-jade); }
-.cl-disc.coral { background: var(--cl-gloss-coral); color: #40150E; }
+.cl-disc.coral { background: var(--cl-gloss-coral); color: #2A0C07; }
 .cl-disc.sky { background: linear-gradient(180deg, #D7E7FB 0%, #C6DBF6 46%, #B7D4F5 46.01%, #A6C8EF 100%); color: #23405F; }
 .cl-disc.sm { width: 42px; height: 42px; flex-basis: 42px; border-radius: 15px; font-size: 1.1rem; }
 .cl-disc.lg { width: 66px; height: 66px; flex-basis: 66px; border-radius: 23px; font-size: 1.75rem; }
@@ -360,7 +360,7 @@ hr { border-color: var(--cl-line); opacity: 1; }
 }
 .btn-primary:active, .btn-success:active { background: var(--cl-gloss-jade-down); color: #0C2A21; }
 
-.btn-danger, .btn-gold { background: var(--cl-gloss-coral); color: #40150E; }
+.btn-danger, .btn-gold { background: var(--cl-gloss-coral); color: #2A0C07; }
 .btn-danger:hover, .btn-gold:hover, .btn-danger:focus, .btn-gold:focus { background: var(--cl-gloss-coral); color: #3A120C; }
 .btn-warning { background: linear-gradient(180deg, #FFE1A8 0%, #FBD68F 46%, #F3C56C 46.01%, #E8B457 100%); color: #4A3410; }
 .btn-warning:hover, .btn-warning:focus { background: linear-gradient(180deg, #FBD68F 0%, #F3C56C 100%); color: #4A3410; }
@@ -508,7 +508,7 @@ hr { border-color: var(--cl-line); opacity: 1; }
 }
 .badge.bg-light, .badge.bg-white { background: var(--cl-gloss-plate) !important; color: var(--cl-ink) !important; box-shadow: var(--cl-clay-sm), var(--cl-lip); }
 .badge.bg-primary, .badge.bg-success { background: var(--cl-gloss-jade) !important; color: #10342A !important; }
-.badge.bg-danger { background: var(--cl-gloss-coral) !important; color: #40150E !important; }
+.badge.bg-danger { background: var(--cl-gloss-coral) !important; color: #2A0C07 !important; }
 .badge.bg-secondary { background: var(--cl-gloss-down) !important; color: var(--cl-ink) !important; }
 .badge.bg-warning { background: linear-gradient(180deg, #FFE1A8 0%, #E8B457 100%) !important; color: #4A3410 !important; }
 .badge.bg-info { background: linear-gradient(180deg, #D7E7FB 0%, #A6C8EF 100%) !important; color: #1B3B5C !important; }
@@ -519,9 +519,10 @@ hr { border-color: var(--cl-line); opacity: 1; }
 .bg-info-subtle { background: rgba(183, 212, 245, .3) !important; }
 .bg-light { background: var(--cl-plate-2) !important; }
 .text-primary { color: var(--cl-jade-ink) !important; }
-.text-success { color: #2E8A6A !important; }
-.text-danger { color: #C4553C !important; }
-.text-warning { color: #C69024 !important; }
+.text-success { color: #23705A !important; }
+.text-danger { color: #A8432C !important; }
+.text-warning { color: #8A5C08 !important; }
+[data-bs-theme="dark"] .text-warning { color: #F2B84B !important; }
 [data-bs-theme="dark"] .text-success { color: #77C9A9 !important; }
 [data-bs-theme="dark"] .text-danger { color: #EF9884 !important; }
 
@@ -924,7 +925,7 @@ hr { border-color: var(--cl-line); opacity: 1; }
   color: var(--cl-ink);
 }
 .pl-exam-timer.is-warning { background: linear-gradient(180deg, #FFE1A8 0%, #E8B457 100%); color: #4A3410; }
-.pl-exam-timer.is-danger { background: var(--cl-gloss-coral); color: #40150E; animation: cl-pulse 1.6s ease-in-out infinite; }
+.pl-exam-timer.is-danger { background: var(--cl-gloss-coral); color: #2A0C07; animation: cl-pulse 1.6s ease-in-out infinite; }
 
 .pl-question {
   background: var(--cl-gloss-plate);
@@ -1140,7 +1141,7 @@ hr { border-color: var(--cl-line); opacity: 1; }
   color: var(--cl-ink);
 }
 .pl-timer.warning { background: linear-gradient(180deg, #FFE1A8 0%, #E8B457 100%); color: #4A3410; }
-.pl-timer.danger { background: var(--cl-gloss-coral); color: #40150E; animation: cl-pulse 1.6s ease-in-out infinite; }
+.pl-timer.danger { background: var(--cl-gloss-coral); color: #2A0C07; animation: cl-pulse 1.6s ease-in-out infinite; }
 
 /* بطاقة السؤال */
 .pl-question-card {
@@ -1179,7 +1180,7 @@ hr { border-color: var(--cl-line); opacity: 1; }
 .pl-option.correct { background: rgba(124, 207, 176, .42); box-shadow: var(--cl-clay-sm), 0 0 0 2px rgba(42, 122, 98, .45); }
 .pl-option.correct .pl-option-key { background: var(--cl-gloss-jade); color: #10342A; border: 0; }
 .pl-option.wrong { background: rgba(232, 115, 92, .26); box-shadow: var(--cl-clay-sm), 0 0 0 2px rgba(196, 85, 60, .4); }
-.pl-option.wrong .pl-option-key { background: var(--cl-gloss-coral); color: #40150E; border: 0; }
+.pl-option.wrong .pl-option-key { background: var(--cl-gloss-coral); color: #2A0C07; border: 0; }
 
 /* خريطة الأسئلة */
 .pl-navigator { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -1291,7 +1292,7 @@ hr { border-color: var(--cl-line); opacity: 1; }
 .pl-stat-icon.is-gold { background: var(--cl-gloss-jade); color: #103A2C; }
 .pl-stat-icon.is-teal { background: linear-gradient(180deg, #CFF3E4 0%, #A8E0CB 100%); color: #175641; }
 [data-bs-theme="dark"] .pl-stat-icon.is-teal { background: linear-gradient(180deg, #2A4E42 0%, #1F3D34 100%); color: #A8E0CB; }
-.pl-stat-icon.is-red { background: var(--cl-gloss-coral); color: #40150E; }
+.pl-stat-icon.is-red { background: var(--cl-gloss-coral); color: #2A0C07; }
 .pl-stat-icon.is-blue { background: linear-gradient(180deg, #D7E7FB 0%, #A6C8EF 100%); color: #23405F; }
 [data-bs-theme="dark"] .pl-stat-icon.is-blue { background: linear-gradient(180deg, #1E3A57 0%, #172E45 100%); color: #A6C8EF; }
 
@@ -1406,3 +1407,34 @@ hr { border-color: var(--cl-line); opacity: 1; }
 .pl-footer .cl-credit a, footer.text-white .cl-credit a { color: #fff; }
 .pl-footer .cl-credit a:hover { color: var(--cl-jade); }
 [data-bs-theme="dark"] .cl-credit a:hover { color: var(--cl-jade); }
+
+/* ============ 16) شارة الاختبارات (علامة مميّزة لكل نموذج اختبار) ============ */
+/* شارة ثابتة الشكل تُعرض بجانب كل اختبار أو نموذج اختبار، بأيقونة لوحة الاختبار،
+   فيعرف الطالب من أول نظرة أنه أمام اختبار (لا صفحة عادية).
+   نمط «التدريب» يستخدم اللون السماوي ليتميّز عن الاختبار الجادّ الأخضر. */
+.cl-test-badge {
+  display: inline-flex; align-items: center; gap: .42rem;
+  padding: .26rem .8rem .26rem .3rem;
+  border-radius: 999px;
+  background: var(--cl-gloss-jade);
+  color: #10342A;
+  font-size: .8rem; font-weight: 800; line-height: 1.4; white-space: nowrap;
+  box-shadow: var(--cl-clay-sm), var(--cl-lip-jade);
+  vertical-align: middle;
+}
+.cl-test-badge > .bi {
+  display: inline-grid; place-items: center;
+  width: 1.5rem; height: 1.5rem; border-radius: 50%;
+  background: rgba(255, 255, 255, .62);
+  color: #0F3A2D;
+  font-size: .82rem;
+  box-shadow: inset 0 0 0 1px rgba(16, 52, 42, .2);
+}
+[data-bs-theme="dark"] .cl-test-badge { color: #0C2A21; background: linear-gradient(180deg, #B4EAD5 0%, #86D6B8 100%); }
+[data-bs-theme="dark"] .cl-test-badge > .bi { background: rgba(255, 255, 255, .5); color: #0C2A21; }
+.cl-test-badge.is-practice {
+  background: linear-gradient(180deg, #D7E7FB 0%, #A6C8EF 100%);
+  color: #1B3B5C;
+  box-shadow: var(--cl-clay-sm), var(--cl-lip);
+}
+.cl-test-badge.is-practice > .bi { color: #1B3B5C; box-shadow: inset 0 0 0 1px rgba(27, 59, 92, .22); }

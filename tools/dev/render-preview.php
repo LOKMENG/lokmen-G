@@ -34,7 +34,6 @@ function preview_seed(): void
         ['setting_key' => 'contact_phone', 'setting_value' => '966566293743'],
         ['key' => 'bank_name',     'value' => 'بنك إس تي سي (STC Bank)'],
         ['key' => 'bank_iban',     'value' => 'SA5678000000001259468554'],
-        ['key' => 'design_theme',  'value' => 'neon-carbon'],
         ['setting_key' => 'contact_email', 'setting_value' => 'info@example.com'],
         ['setting_key' => 'telegram_bot_username', 'setting_value' => 'lokmen_bot'],
         ['setting_key' => 'exam_default_pass', 'setting_value' => '60'],

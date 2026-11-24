@@ -761,7 +761,6 @@ INSERT INTO `settings` (`setting_key`, `setting_value`, `setting_group`, `settin
 ('contact_email',          'support@example.com', 'general', 'string', 'البريد للدعم', 1),
 ('contact_phone',          '966566293743', 'general', 'string', 'جوال الدعم (واتساب)', 1),
 ('default_currency',       'SAR', 'general', 'string', 'العملة', 1),
-('design_theme',           'neon-carbon', 'general', 'string', 'قالب التصميم (neon-carbon = نيون كاربون، green = النسخة الأولى، celadon = السيلادون)', 1),
 ('subscription_price',     '100', 'subscription', 'int', 'قيمة الاشتراك الأساسية (ريال)', 1),
 ('subscription_days',      '365', 'subscription', 'int', 'مدة الاشتراك بالأيام', 1),
 ('payment_instructions',   'حوّل مبلغ الاشتراك إلى الحساب البنكي التالي ثم ارفع صورة الإيصال ورقم العملية:\n\nالبنك: بنك إس تي سي (STC Bank)\nرقم الآيبان: SA5678000000001259468554\nاسم المستفيد: منصة الرخصة المهنية\n\nملاحظة: يتم تفعيل الحساب بعد التحقق من الدفع (عادة أقل من 24 ساعة).\nللاستفسار عن الدفع: واتساب 0566293743', 'subscription', 'text', 'تعليمات الدفع اليدوي', 1),

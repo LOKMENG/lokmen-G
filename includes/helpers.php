@@ -600,35 +600,6 @@ if (!function_exists('audit')) {
     }
 }
 
-if (!function_exists('design_theme')) {
-    /**
-     * قالب التصميم الحالي.
-     *   green   = القالب الأول (النسخة الأولى — الافتراضي)
-     *   celadon = القالب الثاني (سيلادون — كلايمورفيزم عربي RTL)
-     * يُضبط من: لوحة التحكم ← الإعدادات ← إعدادات عامة ← قالب التصميم.
-     */
-    function design_theme(): string
-    {
-        $theme = strtolower(trim((string) settings('design_theme', 'neon-carbon')));
-        return in_array($theme, ['celadon', 'green', 'neon-carbon'], true) ? $theme : 'neon-carbon';
-    }
-}
-
-if (!function_exists('theme_credit')) {
-    /**
-     * سطر النسبة في التذييل حسب القالب المفعّل.
-     * القالبان Celadon و Neon Carbon مجانيان بشروط تبقى فيها نسبة القالب.
-     */
-    function theme_credit(): string
-    {
-        return match (design_theme()) {
-            'neon-carbon' => 'التصميم مستوحى من قالب Neon Carbon 2165',
-            'celadon'     => 'التصميم مستوحى من قالب Celadon 633',
-            default       => 'التصميم: الهوية الخضراء لمنصة الرخصة المهنية',
-        };
-    }
-}
-
 if (!function_exists('contact_phone_display')) {
     /** يعرض رقم الجوال بالصيغة المحلية (05XXXXXXXX) للعرض فقط. */
     function contact_phone_display(): string
@@ -653,13 +624,6 @@ if (!function_exists('contact_phone_intl')) {
             $digits = substr($digits, 2);
         }
         return str_starts_with($digits, '0') ? '966' . substr($digits, 1) : $digits;
-    }
-}
-
-if (!function_exists('design_theme_is')) {
-    function design_theme_is(string $theme): bool
-    {
-        return design_theme() === $theme;
     }
 }
 

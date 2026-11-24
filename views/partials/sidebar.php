@@ -108,7 +108,7 @@ $subStatus = user() && !$isAdminArea ? \App\Services\SubscriptionService::status
             </a>
             <div class="nav-section">التدريب والاختبارات</div>
             <a class="nav-link <?= is_active_menu('exams') && !is_active_menu('exams/history') ? 'active' : '' ?>" href="<?= e(url('exams/index')) ?>">
-                <i class="bi bi-journal-text"></i> الاختبارات التجريبية
+                <i class="bi bi-clipboard2-check-fill"></i> الاختبارات التجريبية
             </a>
             <a class="nav-link <?= is_active_menu('questions/practice') ? 'active' : '' ?>" href="<?= e(url('questions/practice')) ?>">
                 <i class="bi bi-lightning-charge"></i> تدريب سريع

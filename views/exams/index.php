@@ -14,7 +14,7 @@
         <div class="card">
             <div class="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
                 <span><i class="bi bi-magic text-primary me-2"></i> إنشاء اختبار مخصص</span>
-                <span class="badge bg-light text-dark border">طريقة مرنة للتدريب المركّز</span>
+                <span class="cl-test-badge"><i class="bi bi-clipboard2-check-fill" aria-hidden="true"></i> طريقة مرنة للتدريب المركّز</span>
             </div>
             <div class="card-body">
                 <form method="post" action="<?= e(url('exams/start')) ?>" class="row g-3 align-items-end">
@@ -103,12 +103,13 @@
             <div class="card h-100">
                 <div class="card-body d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="badge bg-primary-subtle text-primary-emphasis"><?= e($modes[$template['mode']] ?? $template['mode']) ?></span>
+                        <span class="cl-test-badge"><i class="bi bi-clipboard2-check-fill" aria-hidden="true"></i> نموذج اختبار</span>
                         <span class="badge bg-light text-dark border"><?= e($template['track_name']) ?></span>
                     </div>
                     <h6 class="fw-bold mb-1"><?= e($template['title']) ?></h6>
                     <p class="text-muted small flex-grow-1"><?= e(str_limit((string) $template['description'], 110)) ?></p>
                     <div class="d-flex flex-wrap gap-2 small text-muted mb-3">
+                        <span><i class="bi bi-sliders me-1"></i><?= e($modes[$template['mode']] ?? $template['mode']) ?></span>
                         <span><i class="bi bi-list-ol me-1"></i><?= e(ar_digits((int) $template['question_count'])) ?> سؤالاً</span>
                         <span><i class="bi bi-clock me-1"></i>
                             <?= (int) $template['duration_minutes'] > 0 ? e(ar_digits((int) $template['duration_minutes'])) . ' دقيقة' : 'بدون مؤقت' ?>
