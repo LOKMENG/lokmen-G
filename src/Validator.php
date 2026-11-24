@@ -20,6 +20,9 @@ final class Validator
     /** @var array<string,string> */
     private array $errors = [];
 
+    /** @var array<string,string> بيانات تُستخدم في فحص قوة كلمة المرور (البريد والاسم والجوال) */
+    private array $passwordContext = [];
+
     private const LABELS = [
         'full_name'   => 'الاسم الكامل',
         'phone'       => 'رقم الجوال',
@@ -41,6 +44,20 @@ final class Validator
         $this->data = $data;
         $this->rules = $rules;
         $this->labels = $labels;
+        foreach (['email', 'full_name', 'name', 'phone'] as $key) {
+            if (isset($data[$key]) && is_scalar($data[$key])) {
+                $this->passwordContext[$key] = (string) $data[$key];
+            }
+        }
+    }
+
+    /** يضيف بيانات إلى سياق فحص كلمة المرور أو يقرأه. @param array<string,string>|null $context @return array<string,string> */
+    public function passwordContext(?array $context = null): array
+    {
+        if ($context !== null) {
+            $this->passwordContext = array_merge($this->passwordContext, $context);
+        }
+        return $this->passwordContext;
     }
 
     /** @param array<string,mixed> $data @param array<string,string> $rules */
@@ -155,11 +172,10 @@ final class Validator
                 break;
 
             case 'password':
-                $min = (int) config('security.password_min_length', 8);
-                if (mb_strlen($stringValue, 'UTF-8') < $min) {
-                    $this->fail($field, sprintf('%s يجب أن تكون %d أحرف على الأقل.', $label, $min));
-                } elseif (preg_match('/[A-Za-z]/', $stringValue) !== 1 || preg_match('/\d/', $stringValue) !== 1) {
-                    $this->fail($field, $label . ' يجب أن تحتوي على حرف ورقم.');
+                // السياسة القوية: الطول + التنوع + رفض كلمات المرور الشائعة + رفض اشتقاقها من بيانات المستخدم
+                $policy = Security::passwordPolicy($stringValue, $this->passwordContext());
+                if ($policy['ok'] !== true) {
+                    $this->fail($field, (string) $policy['message']);
                 }
                 break;
 

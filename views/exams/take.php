@@ -34,7 +34,8 @@ $total = count($questions);
     <!-- شريط المعلومات -->
     <div class="pl-exam-bar mb-3">
         <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-primary-subtle text-primary-emphasis">
+            <span class="cl-test-badge<?= $isPractice ? ' is-practice' : '' ?>">
+                <i class="bi bi-<?= $isPractice ? 'mortarboard-fill' : 'clipboard2-check-fill' ?>" aria-hidden="true"></i>
                 <?= e($isPractice ? 'نمط التدريب' : 'اختبار تجريبي') ?>
             </span>
             <span class="small text-muted d-none d-md-inline"><?= e(str_limit((string) $attempt['title'], 40)) ?></span>

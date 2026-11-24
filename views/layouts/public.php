@@ -107,7 +107,9 @@ $pageScripts = $pageScripts ?? [];
                 <h6 class="text-white">تواصل معنا</h6>
                 <ul class="list-unstyled small">
                     <?php if (trim((string) settings('contact_phone', '')) !== ''): ?>
-                        <li class="mb-1"><i class="bi bi-whatsapp me-1"></i> <?= e(settings('contact_phone')) ?></li>
+                        <li class="mb-1"><i class="bi bi-whatsapp me-1"></i>
+                            <a class="link-light" dir="ltr" href="https://wa.me/<?= e(contact_phone_intl()) ?>" target="_blank" rel="noopener"><?= e(contact_phone_display()) ?></a>
+                        </li>
                     <?php endif; ?>
                     <?php if (trim((string) settings('contact_email', '')) !== ''): ?>
                         <li class="mb-1"><i class="bi bi-envelope me-1"></i> <?= e(settings('contact_email')) ?></li>

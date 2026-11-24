@@ -163,7 +163,7 @@ function smoke_run(string $route, string $persona): int
     $file = BASE_PATH . '/' . $route;
     if (!is_file($file)) {
         $GLOBALS['smoke_reported'] = true;
-        fwrite(STDERR, "غير موجود: {$route}\n");
+        fwrite(cli_err(), "غير موجود: {$route}\n");
         return 2;
     }
 
@@ -232,8 +232,8 @@ if ($routeOption !== null) {
 if (cli_has_flag('all')) {
     $binary = PHP_BINARY;
     if ($binary === '' || str_contains($binary, 'wasm') || !is_file($binary)) {
-        fwrite(STDERR, "لا يمكن تشغيل --all في هذه البيئة (PHP_BINARY غير تنفيذي).\n");
-        fwrite(STDERR, "استخدم: for r in \$(php tools/dev/smoke.php --list | head -n -2 | awk '{print \$1}'); do php tools/dev/smoke.php --route=\$r; done\n");
+        fwrite(cli_err(), "لا يمكن تشغيل --all في هذه البيئة (PHP_BINARY غير تنفيذي).\n");
+        fwrite(cli_err(), "استخدم: for r in \$(php tools/dev/smoke.php --list | head -n -2 | awk '{print \$1}'); do php tools/dev/smoke.php --route=\$r; done\n");
         exit(2);
     }
     $failed = 0;

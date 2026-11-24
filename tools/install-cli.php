@@ -33,13 +33,13 @@ const CLI_ENV  = BASE_PATH . '/.env';
 
 function out(string $line = ''): void
 {
-    fwrite(STDOUT, $line . "\n");
+    fwrite(cli_out(), $line . "\n");
 }
 
 function ask(string $label, string $default = ''): string
 {
     $suffix = $default !== '' ? ' [' . $default . ']' : '';
-    fwrite(STDOUT, $label . $suffix . ': ');
+    fwrite(cli_out(), $label . $suffix . ': ');
     $answer = fgets(STDIN);
     if ($answer === false) {
         return $default;
@@ -50,7 +50,7 @@ function ask(string $label, string $default = ''): string
 
 function fail(string $message): never
 {
-    fwrite(STDERR, "\n✘ " . $message . "\n");
+    fwrite(cli_err(), "\n✘ " . $message . "\n");
     exit(1);
 }
 
@@ -240,7 +240,7 @@ $lastReport = 0;
 $import = DatabaseImporter::run($pdo, $sqlText, static function (int $number) use (&$lastReport): void {
     if ($number - $lastReport >= 25) {
         $lastReport = $number;
-        fwrite(STDOUT, '    … ' . $number . " جملة\n");
+        fwrite(cli_out(), '    … ' . $number . " جملة\n");
     }
 });
 if (!$import['ok']) {

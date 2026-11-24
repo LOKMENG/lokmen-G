@@ -76,6 +76,9 @@ $subStatus = user() && !$isAdminArea ? \App\Services\SubscriptionService::status
             <a class="nav-link <?= is_active_menu('admin/reports-queue') ? 'active' : '' ?>" href="<?= e(url('admin/reports-queue')) ?>">
                 <i class="bi bi-flag"></i> بلاغات الأسئلة
             </a>
+            <a class="nav-link <?= is_active_menu('admin/security') ? 'active' : '' ?>" href="<?= e(url('admin/security')) ?>">
+                <i class="bi bi-shield-lock"></i> فحص الحماية
+            </a>
             <div class="nav-section">الاختبارات والنظام</div>
             <a class="nav-link <?= is_active_menu('admin/exams') ? 'active' : '' ?>" href="<?= e(url('admin/exams')) ?>">
                 <i class="bi bi-journal-check"></i> قوالب الاختبارات
@@ -105,7 +108,7 @@ $subStatus = user() && !$isAdminArea ? \App\Services\SubscriptionService::status
             </a>
             <div class="nav-section">التدريب والاختبارات</div>
             <a class="nav-link <?= is_active_menu('exams') && !is_active_menu('exams/history') ? 'active' : '' ?>" href="<?= e(url('exams/index')) ?>">
-                <i class="bi bi-journal-text"></i> الاختبارات التجريبية
+                <i class="bi bi-clipboard2-check-fill"></i> الاختبارات التجريبية
             </a>
             <a class="nav-link <?= is_active_menu('questions/practice') ? 'active' : '' ?>" href="<?= e(url('questions/practice')) ?>">
                 <i class="bi bi-lightning-charge"></i> تدريب سريع

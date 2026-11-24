@@ -140,6 +140,8 @@ final class Auth
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int) $user['id'];
         $_SESSION['logged_in_at'] = time();
+        $_SESSION['session_started_at'] = time();  // العمر المطلق للجلسة
+        $_SESSION['last_seen_at'] = time();        // آخر نشاط (لإنهاء الجلسة عند الخمول)
         $_SESSION['fingerprint'] = $this->fingerprint();
         unset($_SESSION['_csrf_token'], $_SESSION['_csrf_time']);
 
@@ -299,6 +301,23 @@ final class Auth
         $email = mb_strtolower(trim((string) ($data['email'] ?? '')));
         $phone = Str::normalizeSaudiPhone((string) ($data['phone'] ?? ''));
 
+        // تحديد المعدل: عدد الحسابات المسموح بإنشائها من نفس الـ IP في الساعة
+        $registerKey = 'register:' . Security::ip();
+        if (Security::exceededLimit($registerKey, max(1, (int) config('security.register_max_per_ip', 5)), 60)) {
+            Logger::security('تجاوز حد إنشاء الحسابات من IP واحد', Security::requestContext() + ['email' => $email]);
+            return ['ok' => false, 'message' => 'تم تجاوز عدد الحسابات المسموح بإنشائها من هذا الاتصال. حاول بعد ساعة.'];
+        }
+
+        // سياسة كلمة المرور القوية (تُنفَّذ خادمياً حتى لو تجاوز العميل التحقق)
+        $policy = Security::passwordPolicy((string) ($data['password'] ?? ''), [
+            'email'     => $email,
+            'full_name' => (string) ($data['full_name'] ?? ''),
+            'phone'     => $phone,
+        ]);
+        if ($policy['ok'] !== true) {
+            return ['ok' => false, 'message' => (string) $policy['message']];
+        }
+
         $exists = $db->one('SELECT id, email, phone FROM `users` WHERE email = :e OR phone = :p LIMIT 1', ['e' => $email, 'p' => $phone]);
         if ($exists !== null) {
             $message = mb_strtolower((string) $exists['email']) === $email
@@ -320,6 +339,7 @@ final class Auth
             'email_verified_at' => null,
         ]);
 
+        Security::hitLimit('register:' . Security::ip());
         Notifier::welcome($userId);
         audit('auth.register', 'user', $userId, ['email' => $email]);
 
@@ -334,9 +354,18 @@ final class Auth
     public function requestPasswordReset(string $email): array
     {
         $email = mb_strtolower(trim($email));
+        $generic = ['ok' => true, 'message' => 'إذا كان البريد مسجلاً لدينا فسيصلك رابط إعادة التعيين خلال دقائق.'];
+
+        // تحديد المعدل لمنع إغراق البريد أو استغلال النموذج
+        $resetKey = 'reset:' . hash('sha256', $email) . ':' . Security::ip();
+        if (Security::exceededLimit($resetKey, max(1, (int) config('security.reset_max_per_hour', 5)), 60)) {
+            Logger::security('تجاوز حد طلبات إعادة تعيين كلمة المرور', Security::requestContext() + ['email' => $email]);
+            return $generic; // رسالة عامة حتى لا يُكشف سلوك تحديد المعدل
+        }
+        Security::hitLimit($resetKey);
+
         $user = Database::instance()->one('SELECT * FROM `users` WHERE email = :e LIMIT 1', ['e' => $email]);
         // لا نكشف إن كان البريد مسجلاً أم لا
-        $generic = ['ok' => true, 'message' => 'إذا كان البريد مسجلاً لدينا فسيصلك رابط إعادة التعيين خلال دقائق.'];
 
         if ($user === null) {
             return $generic;
@@ -371,6 +400,10 @@ final class Auth
         if ($row === null) {
             return ['ok' => false, 'message' => 'رابط إعادة التعيين غير صالح أو منتهي الصلاحية.'];
         }
+        $policy = Security::passwordPolicy($newPassword, ['email' => (string) ($row['email'] ?? '')]);
+        if ($policy['ok'] !== true) {
+            return ['ok' => false, 'message' => (string) $policy['message']];
+        }
         $db = Database::instance();
         $db->transaction(function (Database $db) use ($row, $newPassword): void {
             $db->update('users', ['password_hash' => Security::hashPassword($newPassword)], 'id = :id', ['id' => (int) $row['user_id']]);
@@ -390,6 +423,17 @@ final class Auth
         }
         if (!Security::verifyPassword($currentPassword, (string) $user['password_hash'])) {
             return ['ok' => false, 'message' => 'كلمة المرور الحالية غير صحيحة.'];
+        }
+        if (Security::verifyPassword($newPassword, (string) $user['password_hash'])) {
+            return ['ok' => false, 'message' => 'كلمة المرور الجديدة مطابقة للحالية؛ اختر كلمة مرور مختلفة.'];
+        }
+        $policy = Security::passwordPolicy($newPassword, [
+            'email'     => (string) $user['email'],
+            'full_name' => (string) $user['full_name'],
+            'phone'     => (string) $user['phone'],
+        ]);
+        if ($policy['ok'] !== true) {
+            return ['ok' => false, 'message' => (string) $policy['message']];
         }
         Database::instance()->update('users', ['password_hash' => Security::hashPassword($newPassword)], 'id = :id', ['id' => $userId]);
         audit('auth.password_changed', 'user', $userId);

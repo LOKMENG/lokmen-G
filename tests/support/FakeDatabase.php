@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use RuntimeException;
+use Throwable;
 
 /**
  * قاعدة بيانات وهمية في الذاكرة — للاختبارات والمعاينة المحلية فقط.
